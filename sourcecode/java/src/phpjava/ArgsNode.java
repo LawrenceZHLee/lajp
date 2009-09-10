@@ -16,10 +16,13 @@ public class ArgsNode
 	 * <li>s：字符形</li>
 	 * <li>a：数组</li>
 	 * <li>O：对象</li>
+	 * <li>N：null</li>
 	 */
 	String type;
+	
 	/** 节点下标名称, php关联数组key或对象属性名 */
 	String name;
+	
 	/**
 	 * 节点值
 	 * <li>整形: int</li>

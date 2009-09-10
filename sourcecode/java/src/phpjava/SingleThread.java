@@ -9,8 +9,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 单次请求服务线程
@@ -39,8 +41,6 @@ class SingleThread extends Thread
 	/** 参数字节数组指针,指向数组中有效字节的下一个 */
 	int sp = 0;
 	
-	
-	
 	/** 参数Node树(包含调用的类名和方法名称) */
 	ArgsNode argsTree;
 	
@@ -49,13 +49,20 @@ class SingleThread extends Thread
 	/** 请求的方法名称 */
 	String methodName;
 	/** 参数类型数组 */
-	Class[] argsClazz;
+	Class<?>[] argsClazz;
 	/** 参数值数组 */
 	Object[] argsValue;
 	
-	/** 应答 */
-	byte[] callBack;
+	/** 应答字节数组 */
+	byte[] callBack = new byte[PhpJava.PHPJAVA_MSG_MAX];
+	/** 应答字节数组指针，指向数组中有效字节的下一个 */
+	int cbp = 0;
 	
+	
+	/**
+	 * 构造方法
+	 * @param processId 请求消息类型id
+	 */
 	public SingleThread(int processId)
 	{
 		this.processId = processId;
@@ -215,43 +222,27 @@ class SingleThread extends Thread
 		//---------------------------------------------------
 		//	6.调用Java服务方法
 		//---------------------------------------------------
-		Class clazz = null;
+		//获得调用的方法
+		Method method = null;
 		try
 		{
-			clazz = Class.forName(clazzName);
+			method = ReflectUtil.matchingMethod(clazzName, methodName, argsClazz);
 		}
 		catch (ClassNotFoundException e)
 		{
 			e.printStackTrace();
 			//构建异常消息
-			byte[] exMsg = exceptionRsp("request message error: Can't find class " + clazzName);
+			byte[] exMsg = exceptionRsp("ClassNotFoundException: " + e.getMessage());
 			//发送异常应答
 			MsgQ.msgsnd(PhpJava.msqid, processId + 1, exMsg, exMsg.length);
 			
 			return; 
 		}
-		
-		//获得调用的方法
-		Method method = null;
-		try
-		{
-			method = clazz.getMethod(methodName, argsClazz);
-		}
-		catch (SecurityException e)
+		catch (MethodNotFoundException e)
 		{
 			e.printStackTrace();
 			//构建异常消息
-			byte[] exMsg = exceptionRsp("request message error: SecurityException for " + clazzName + "." + method.getName());
-			//发送异常应答
-			MsgQ.msgsnd(PhpJava.msqid, processId + 1, exMsg, exMsg.length);
-			
-			return; 
-		}
-		catch (NoSuchMethodException e)
-		{
-			e.printStackTrace();
-			//构建异常消息
-			byte[] exMsg = exceptionRsp("request message error: Can't find method " + clazzName + "." + method.getName());
+			byte[] exMsg = exceptionRsp("MethodNotFoundException: " + e.getMessage());
 			//发送异常应答
 			MsgQ.msgsnd(PhpJava.msqid, processId + 1, exMsg, exMsg.length);
 			
@@ -266,28 +257,97 @@ class SingleThread extends Thread
 		}
 		catch (IllegalArgumentException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			//构建异常消息
+			byte[] exMsg = exceptionRsp("request message error: IllegalArgumentException for call method " + clazzName + "." + method.getName());
+			//发送异常应答
+			MsgQ.msgsnd(PhpJava.msqid, processId + 1, exMsg, exMsg.length);
+			
+			return; 
 		}
 		catch (IllegalAccessException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			//构建异常消息
+			byte[] exMsg = exceptionRsp("request message error: IllegalAccessException for call method " + clazzName + "." + method.getName());
+			//发送异常应答
+			MsgQ.msgsnd(PhpJava.msqid, processId + 1, exMsg, exMsg.length);
+			
+			return; 
 		}
 		catch (InvocationTargetException e)
 		{
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			//构建异常消息
+			byte[] exMsg = exceptionRsp("request message error: InvocationTargetException for call method " + clazzName + "." + method.getName());
+			//发送异常应答
+			MsgQ.msgsnd(PhpJava.msqid, processId + 1, exMsg, exMsg.length);
+			
+			return; 
 		}
 		
 		//---------------------------------------------------
 		//	7.转换Java服务方法返回值到Php序列化数据
 		//---------------------------------------------------
+		if (obj == null) //Java服务方法返回void
+		{
+			byte[] voidResponse = voidResponse();
+			MsgQ.msgsnd(PhpJava.msqid, processId + 1, voidResponse, voidResponse.length);			
+			return; 
+		}
+		else
+		{
+			try
+			{
+				javaSeriallze2Php(null, obj);
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+				//构建异常消息
+				byte[] exMsg = exceptionRsp("Response message error: " + e.getMessage());
+				//发送异常应答
+				MsgQ.msgsnd(PhpJava.msqid, processId + 1, exMsg, exMsg.length);
+				
+				return; 
+			}
+			
+			//--测试
+			System.out.println("response:" + new String(callBack, 0, cbp));
+		}
 		
 		//---------------------------------------------------
 		//	8.构建并发送response消息包
 		//---------------------------------------------------
+		//计算response消息体拆分数量
+		int splitCount = 0; //拆分数量初始化
+		int divisor = cbp / PhpJava.PHPJAVA_MSG_MAX;	//除数
+		int remainder = cbp % PhpJava.PHPJAVA_MSG_MAX;	//余数
+		if (divisor < 1)
+		{
+			splitCount = 1;
+		}
+		else 
+		{
+			if (remainder != 0)	//不能整除
+			{
+				splitCount = divisor + 1;	//拆分数量: 整除 + 1
+			}
+			else
+			{
+				splitCount = divisor;		//拆分数量: 整除 
+			}
+		}
 		
+		for (int i = 0; i < splitCount; i++)
+		{
+			
+		}
+
+		//---------------------------------------------------
+		//	9.接收response回应
+		//---------------------------------------------------
+
 		System.out.println("线程关闭");
 	}
 	
@@ -340,6 +400,10 @@ class SingleThread extends Thread
 			//类型
 			switch (valueType)
 			{
+				case 0x4e:		//NULL
+					father.addChild(ArgsNode.createNode("N", name, null));
+					sp = sp + 2;							//下一个
+					continue NEXT;
 				case 0x69: 		//i 整形
 					int a = sp + 2;							//"值"起始
 					sp = nextIndex(args, (byte)0x3b, a); 	//"值"结束";"
@@ -436,7 +500,11 @@ class SingleThread extends Thread
 			ArgsNode currentNode = argsTree.subList.get(i + 1);
 			//当前节点类型
 			String type = currentNode.type;
-			if (type.equals("i"))
+			if (type.equals("N"))
+			{
+				argsClazz[i] = null;
+			}
+			else if (type.equals("i"))
 			{
 				argsClazz[i] = int.class;
 			}
@@ -511,7 +579,11 @@ class SingleThread extends Thread
 	 */
 	private Object parseArgsNodeValue(ArgsNode node) throws Exception
 	{
-		if (node.type.equals("i"))
+		if (node.type.equals("N"))
+		{
+			return null;
+		}
+		else if (node.type.equals("i"))
 		{
 			return (Integer)node.Value;
 		}
@@ -529,8 +601,6 @@ class SingleThread extends Thread
 		}
 		else if (node.type.equals("a"))
 		{
-			Object retObj = null;
-			
 			//以数据第一个元素的key类型为依据:
 			//	如果是"i"(在ArgsNode节点中不存储name),对应java.util.List,
 			//	如果是"s"(在ArgsNode节点中key存储在name中),对应java.util.Map。
@@ -540,7 +610,7 @@ class SingleThread extends Thread
 				String subNodeName = node.subList.get(0).name;
 				if (subNodeName == null)
 				{
-					List list = new ArrayList();
+					List<Object> list = new ArrayList<Object>();
 					for (ArgsNode subNode : node.subList)
 					{
 						list.add(parseArgsNodeValue(subNode));
@@ -550,7 +620,7 @@ class SingleThread extends Thread
 				}
 				else
 				{
-					Map map = new HashMap();
+					Map<String, Object> map = new HashMap<String, Object>();
 					for (ArgsNode subNode : node.subList)
 					{
 						map.put(subNode.name, parseArgsNodeValue(subNode));
@@ -561,14 +631,14 @@ class SingleThread extends Thread
 			}
 			else
 			{
-				return new ArrayList();
+				return new ArrayList<Object>();
 			}
 		}
 		else if (node.type.equals("O"))
 		{
 			//类名
 			String phpClazzName = (String)node.Value;
-			String javaClazzName = phpClazzName.replace('-', '.');
+			String javaClazzName = phpClazzName.replace('_', '.');
 			try
 			{
 				//实例化对象
@@ -583,6 +653,9 @@ class SingleThread extends Thread
 						if (subNode.type.equals("i") || subNode.type.equals("d")
 								|| subNode.type.equals("b") || subNode.type.equals("s"))
 						{
+							//--
+							System.out.printf("%s,%s,%s\n", retObj.getClass(), subNode.name, subNode.Value);
+							
 							javaBeanSetXXX(retObj, subNode.name, subNode.Value);
 						}
 						//属性:集合或对象
@@ -647,12 +720,18 @@ class SingleThread extends Thread
 		
 		for (PropertyDescriptor pd : pds) 
 		{
-			if(pd.getName().equals(attributeName));
+			if(pd.getName().equals(attributeName))
 			{
+				//--
+				System.out.printf("pd.getName():%s,attributeName:%s,%b\n", pd.getName(), attributeName, pd.getName().equals(attributeName));
+				
 				try
 				{
+					Method method = pd.getWriteMethod();
+					//--
+					System.out.printf("反射set方法:%s,对象:%s,属性:%s,值类型:%s,值:%s\n", method.getName(), javaBean.getClass(), attributeName, value.getClass(), value);
 					//执行set方法
-					pd.getWriteMethod().invoke(javaBean, value);
+					method.invoke(javaBean, value);
 					break;
 				}
 				catch (IllegalArgumentException e)
@@ -675,6 +754,317 @@ class SingleThread extends Thread
 	}
 	
 	/**
+	 * java服务方法返回值转换为php序列化数据，并以callBack存储。
+	 * @param name 对应数组的key或对象的属性名,如果null则无key或属性名
+	 * @param obj
+	 */
+	private void javaSeriallze2Php(Object name, Object obj) throws Exception
+	{
+		//名
+		if (name != null)
+		{
+			if (name instanceof Integer)
+			{
+				//数组下标
+				int index = (Integer)name;
+				String nn = "i:" + index + ";"; 
+				
+				try
+				{
+					copy2CallBack(nn.getBytes(PHP_CHARSET));
+				}
+				catch (UnsupportedEncodingException e)
+				{
+					//此异常不可能发生，忽略
+					e.printStackTrace();
+				}
+			}
+			else if (name instanceof String)
+			{
+				//数组key
+				String key = (String)name;
+				byte[] key_b = null;
+				try
+				{
+					key_b = key.getBytes(PHP_CHARSET);
+				}
+				catch (UnsupportedEncodingException e)
+				{
+					//此异常不可能发生，忽略
+					e.printStackTrace();
+				}
+				
+				StringBuilder nn = new StringBuilder();
+				nn.append("s:");
+				nn.append(key_b.length);
+				nn.append(":\"");
+				nn.append(key);
+				nn.append("\";");
+				
+				try
+				{
+					copy2CallBack(nn.toString().getBytes(PHP_CHARSET));
+				}
+				catch (UnsupportedEncodingException e)
+				{
+					//此异常不可能发生，忽略
+					e.printStackTrace();
+				}
+			}
+		}
+
+		if (obj instanceof Integer)
+		{			
+			int i = (Integer)obj;
+			String vv = "i:" + i + ";"; 
+			try
+			{
+				copy2CallBack(vv.getBytes(PHP_CHARSET));
+			}
+			catch (UnsupportedEncodingException e)
+			{
+				//此异常不可能发生，忽略
+				e.printStackTrace();
+			}
+		}
+		else if (obj instanceof Double)
+		{
+			double d = (Double)obj;
+			String vv = "d:" + d + ";"; 
+			try
+			{
+				copy2CallBack(vv.getBytes(PHP_CHARSET));
+			}
+			catch (UnsupportedEncodingException e)
+			{
+				//此异常不可能发生，忽略
+				e.printStackTrace();
+			}
+		}
+		else if (obj instanceof Boolean)
+		{
+			boolean b = (Boolean)obj;
+			String vv = "b:" + (b ? "1" : "0") + ";"; 
+			try
+			{
+				copy2CallBack(vv.getBytes(PHP_CHARSET));
+			}
+			catch (UnsupportedEncodingException e)
+			{
+				//此异常不可能发生，忽略
+				e.printStackTrace();
+			}
+		}
+		else if (obj instanceof String)
+		{
+			String s = (String)obj;
+			try
+			{
+				//值
+				byte[] sByte = null;
+				if (s == null) //null当作长度为0的字符串
+				{
+					sByte = new byte[0];
+				}
+				else
+				{
+					sByte = s.getBytes(PHP_CHARSET);
+				}
+				
+				//值长度
+				byte[] sByteLen = ("" + sByte.length).getBytes(PHP_CHARSET);
+				
+				byte[] vv = new byte[2 + sByteLen.length + 2 + sByte.length + 2];
+				vv[0] = 0x73; 											//s
+				vv[1] = 0x3a;											//:
+				System.arraycopy(sByteLen, 0, vv, 2, sByteLen.length);	//长度
+				vv[2 + sByteLen.length] = 0x3a;							//:
+				vv[2 + sByteLen.length + 1] = 0x22;						//"
+				System.arraycopy(sByte, 0, vv, 2 + sByteLen.length + 2, sByte.length);
+				vv[2 + sByteLen.length + 2 + sByte.length] = 0x22;		//"
+				vv[2 + sByteLen.length + 2 + sByte.length + 1] = 0x3b;	//;
+				
+				copy2CallBack(vv);
+			}
+			catch (UnsupportedEncodingException e)
+			{
+				//此异常不可能发生，忽略
+				e.printStackTrace();
+			}
+		}
+		else if (obj instanceof List)
+		{
+			List<?> list = (List<?>)obj;
+			//数组长度
+			byte[] arrayLen = null;
+			try
+			{
+				arrayLen = ("" + list.size()).getBytes(PHP_CHARSET);
+			}
+			catch (UnsupportedEncodingException e)
+			{
+				//此异常不可能发生，忽略
+				e.printStackTrace();
+			}
+			
+			//数组前部
+			byte[] vv1 = new byte[2 + arrayLen.length + 2]; 
+			vv1[0] = 0x61;											//a
+			vv1[1] = 0x3a;											//:
+			System.arraycopy(arrayLen, 0, vv1, 2, arrayLen.length);	//数组
+			vv1[2 + arrayLen.length] = 0x3a;						//:
+			vv1[2 + arrayLen.length + 1] = 0x7b;					//{
+			copy2CallBack(vv1);
+			
+			//数组元素
+			for (int i = 0; i < list.size(); i++)
+			{
+				Object subObj = list.get(i);
+				javaSeriallze2Php(i, subObj);
+			}
+			
+			//数组后部
+			byte[] vv2 = new byte[]{0x7d};							//}
+			copy2CallBack(vv2);
+		}
+		else if (obj instanceof Map)
+		{
+			Map<?, ?> map = (Map<?, ?>)obj;
+			Set<?> keySet = map.keySet();
+			
+			//数组长度
+			byte[] arrayLen = null;
+			try
+			{
+				arrayLen = ("" + keySet.size()).getBytes(PHP_CHARSET);
+			}
+			catch (UnsupportedEncodingException e)
+			{
+				//此异常不可能发生，忽略
+				e.printStackTrace();
+			}
+			
+			//数组前部
+			byte[] vv1 = new byte[2 + arrayLen.length + 2]; 
+			vv1[0] = 0x61;											//a
+			vv1[1] = 0x3a;											//:
+			System.arraycopy(arrayLen, 0, vv1, 2, arrayLen.length);	//数组
+			vv1[2 + arrayLen.length] = 0x3a;						//:
+			vv1[2 + arrayLen.length + 1] = 0x7b;					//{
+			copy2CallBack(vv1);
+			
+			//数组元素
+			Iterator<?> iterator = keySet.iterator();
+			for (; iterator.hasNext(); )
+			{
+				String key = (String)iterator.next();
+				javaSeriallze2Php(key, map.get(key));
+			}
+			
+			//数组后部
+			byte[] vv2 = new byte[]{0x7d};							//}
+			copy2CallBack(vv2);
+		}
+		else //JavaBean
+		{
+			Class<?> clazz = obj.getClass(); //所属类
+			byte[] className_b = null;
+			try
+			{
+				className_b = clazz.getName().getBytes(PHP_CHARSET);
+			}
+			catch (UnsupportedEncodingException e)
+			{
+				//此异常不可能发生，忽略
+				e.printStackTrace();
+			}
+			
+			PropertyDescriptor[] pd = null; //属性描述
+			try
+			{
+				BeanInfo benaInfo = Introspector.getBeanInfo(clazz, Object.class);
+				pd = benaInfo.getPropertyDescriptors();
+			}
+			catch (IntrospectionException e)
+			{
+				e.printStackTrace();				
+				throw new Exception("IntrospectionException for class " + clazz.getName());
+			}
+
+			//对象前部
+			StringBuilder oo1 = new StringBuilder();
+			oo1.append("O:");
+			oo1.append(className_b.length);
+			oo1.append(":\"");
+			oo1.append(clazz.getName().replace('.', '_'));
+			oo1.append("\":");
+			oo1.append(pd.length);
+			oo1.append(":{");
+			try
+			{
+				copy2CallBack(oo1.toString().getBytes(PHP_CHARSET));
+			}
+			catch (UnsupportedEncodingException e)
+			{
+				//此异常不可能发生，忽略
+				e.printStackTrace();
+			}
+
+			//对象属性
+			for (int i = 0; i < pd.length; i++)
+			{
+				try
+				{
+					javaSeriallze2Php(pd[i].getName(), pd[i].getReadMethod().invoke(obj, null));
+				}
+				catch (IllegalArgumentException e)
+				{
+					e.printStackTrace();				
+					throw new Exception("IllegalArgumentException for attribute " + pd[i].getName() + " from class " + clazz.getName());
+				}
+				catch (IllegalAccessException e)
+				{
+					e.printStackTrace();				
+					throw new Exception("IllegalAccessException for attribute " + pd[i].getName() + " from class " + clazz.getName());
+				}
+				catch (InvocationTargetException e)
+				{
+					e.printStackTrace();				
+					throw new Exception("InvocationTargetException for attribute " + pd[i].getName() + " from class " + clazz.getName());
+				}
+			}
+
+			//数组后部
+			byte[] oo2 = new byte[]{0x7d};							//}
+			copy2CallBack(oo2);
+
+		}
+	}
+	
+	/**
+	 * 将参数cc复制到callBack尾部，如果callBack长度不够扩展一倍
+	 * @param cc 要复制的数据
+	 */
+	private void copy2CallBack(byte[] cc)
+	{
+		//callBack长度自动变化
+		while (cc.length + cbp > callBack.length)
+		{
+			//创建新的callBacl数组，长度是原callBack的一倍
+			byte[] newCallBack = new byte[callBack.length * 2];
+			
+			//复制原callBack数据到新的callBacl数组
+			System.arraycopy(callBack, 0, newCallBack, 0, cbp);
+			callBack = newCallBack;
+		}
+		
+		//复制cc到callBack尾部
+		System.arraycopy(cc, 0, callBack, cbp, cc.length);
+		//cbp指针
+		cbp += cc.length;
+	}
+
+	/**
 	 * 在"buf"数组中查找下一个"c", 从start开始
 	 * @param buf
 	 * @param c
@@ -695,15 +1085,6 @@ class SingleThread extends Thread
 	}
 	
 
-	
-	/**
-	 * java服务方法返回值转换为php序列化数据，并以callBack存储。
-	 * @param obj
-	 */
-	private void javaSeriallze2Php(Object obj)
-	{
-		
-	}
 	
 	/**
 	 * 构建异常Response消息包
@@ -744,13 +1125,13 @@ class SingleThread extends Thread
 		ret[2] = 0x33;	//3
 		ret[3] = 0x3a;	//:
 		ret[4] = 0x7b;	//{
-		ret[5] = 0x69;	//i  //元素1
+		ret[5] = 0x69;	//i  //元素1 
 		ret[6] = 0x3a;	//:
 		ret[7] = 0x30;	//0
 		ret[8] = 0x3b;	//;
 		ret[9] = 0x69;	//i
 		ret[10] = 0x3a;	//:
-		ret[11] = 0x30;	//0
+		ret[11] = 0x30;	//0	 		拆分数量0表示返回异常消息
 		ret[12] = 0x3b;	//;
 		ret[13] = 0x69;	//i  //元素2
 		ret[14] = 0x3a;	//:
@@ -758,7 +1139,7 @@ class SingleThread extends Thread
 		ret[16] = 0x3b;	//;
 		ret[17] = 0x69;	//i
 		ret[18] = 0x3a;	//:
-		ret[19] = 0x31;	//1
+		ret[19] = 0x31;	//1			拆分序号，从1开始
 		ret[20] = 0x3b;	//;
 		ret[21] = 0x69;	//i  //元素3
 		ret[22] = 0x3a;	//:
@@ -766,6 +1147,51 @@ class SingleThread extends Thread
 		ret[24] = 0x3b;	//;
 		System.arraycopy(exBytes, 0, ret, 25, exBytes.length); //异常信息(php序列化string)
 		ret[ret.length - 1] = 0x7d;	//}
+		
+		return ret;
+	}
+	
+	/**
+	 * 构建void类型response消息包
+	 * @return
+	 */
+	private byte[] voidResponse()
+	{
+		//初始化异常消息
+		byte[] ret = new byte[33];
+		ret[0] = 0x61;	//a
+		ret[1] = 0x3a;	//:
+		ret[2] = 0x33;	//3
+		ret[3] = 0x3a;	//:
+		ret[4] = 0x7b;	//{
+		ret[5] = 0x69;	//i  //元素1 
+		ret[6] = 0x3a;	//:
+		ret[7] = 0x30;	//0
+		ret[8] = 0x3b;	//;
+		ret[9] = 0x69;	//i
+		ret[10] = 0x3a;	//:
+		ret[11] = 0x30;	//0	 		拆分数量1
+		ret[12] = 0x3b;	//;
+		ret[13] = 0x69;	//i  //元素2
+		ret[14] = 0x3a;	//:
+		ret[15] = 0x31;	//1
+		ret[16] = 0x3b;	//;
+		ret[17] = 0x69;	//i
+		ret[18] = 0x3a;	//:
+		ret[19] = 0x31;	//1			拆分序号，从1开始
+		ret[20] = 0x3b;	//;
+		ret[21] = 0x69;	//i  //元素3
+		ret[22] = 0x3a;	//:
+		ret[23] = 0x32;	//2
+		ret[24] = 0x3b;	//;
+		ret[25] = 0x73;	//s
+		ret[26] = 0x3a;	//:
+		ret[27] = 0x30;	//0
+		ret[28] = 0x3a;	//:
+		ret[29] = 0x22;	//"
+		ret[30] = 0x22;	//"
+		ret[31] = 0x3b;	//;
+		ret[32] = 0x7d;	//}
 		
 		return ret;
 	}
