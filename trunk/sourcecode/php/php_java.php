@@ -63,16 +63,7 @@ function lajp_call()
 	//					: 以1作为消息类型发送，服务端以2作为消息类型回应。
 	//	}
 	//
-	// response消息包： 0长度消息包，以"请求方ID+1"作为消息类型
-	//	array
-	//	{
-	//		String		:请求类型  "s":单次请求， "m":连续请求。
-	//		int			: 发送方ID(10位整数)，主要由getpid()， rand(0, 300)组成。
-	//					: <>单次请求在握手建立后，客户端以此作为消息类型发送，服务端以
-	//					: $id+1回应。
-	//					: <>连续请求在握手建立后，服务端以此为key建立消息队列，客户端
-	//					: 以1作为消息类型发送，服务端以2作为消息类型回应。
-	//	}
+	// response消息包	: 0长度消息包，以"请求方ID+1"作为消息类型
 	// ---------------------------------------------------
 	//进程消息类型;
 	$pid = 100000 + (int)posix_getpid();	//进程ID
@@ -107,7 +98,6 @@ function lajp_call()
 	// request消息包：
 	//	array
 	//	{
-	// 		int		: 消息体总长度(java方法名、参数数组序列化后的长度)
 	//		int		: 拆分数量（如果不拆分，值为1）
 	//		int		: 拆分序号，从1开始
 	//		string	: 拆分后本次的消息体(java方法参数数组序列化)
@@ -140,7 +130,6 @@ function lajp_call()
 	{
 		//发送消息结构
 		$request = array();
-		$request[] = $msg_body_len;	//消息总长度
 		$request[] = $split_count;	//拆分数量
 		$request[] = $i + 1;		//拆分序号
 		//消息体(本次拆分)
@@ -159,7 +148,7 @@ function lajp_call()
 	// response消息包：
 	//	array
 	//	{
-	//		int		: 拆分数量（如果不拆分，值为1）(如果=-1，表示异常)
+	//		int		: 拆分数量（如果不拆分，值为1）(如果=0，表示返回异常消息)
 	//		int		: 拆分序号，从1开始
 	//		string	: 拆分后本次的消息体
 	//	}
@@ -172,7 +161,7 @@ function lajp_call()
 	} 
 
 	//收到异常
-	if ($response1[1] == -1)
+	if ($response1[1] == 0)
 	{
 		//异常信息不用反序列化
 		throw new Exception("[LAJP Error] Response receive Java exception: $response1[3]", MSG_RECEIVE_ERROR);
@@ -181,15 +170,17 @@ function lajp_call()
 	//只有一个应答消息包
 	if ($response1[1] == 1)
 	{
-		return unserialize($response1[3]); //反序列化
+		echo "只有一个应答消息包：". $response1[2]. "<br>";
+
+		return unserialize($response1[2]); //反序列化
 	}
 	
 	//应答消息拆分数量
-	$split_count = $response1[1];
+	$split_count = $response1[0];
 	//当前拆分第几次
-	$split_index = $response1[2];
+	$split_index = $response1[1];
 	//消息组包(第一个消息包)
-	$rsp_ms = $response1[3];
+	$rsp_ms = $response1[2];
 
 	for ($i = 1; $i < $split_count; $i++)
 	{
@@ -198,7 +189,7 @@ function lajp_call()
 			throw new Exception("[LAJP Error] Response: $msg_error", MSG_RECEIVE_ERROR);
 		}
 
-		$rsp_ms .= $response_n[3];		//拼接消息包
+		$rsp_ms .= $response_n[2];		//拼接消息包
 	}
 
 	echo "返回：". $rsp_ms. "<br>";
