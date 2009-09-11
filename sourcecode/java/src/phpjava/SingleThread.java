@@ -58,6 +58,10 @@ class SingleThread extends Thread
 	/** 应答字节数组指针，指向数组中有效字节的下一个 */
 	int cbp = 0;
 	
+	/** 消息队列发送缓冲区 */
+	byte[] response = new byte[PhpJava.PHPJAVA_MSG_MAX * 2];
+	/** 发送缓冲区数组指针，指向数组中有效字节的下一个 */
+	int rsp = 0;
 	
 	/**
 	 * 构造方法
@@ -339,9 +343,68 @@ class SingleThread extends Thread
 			}
 		}
 		
+		int splitPoint = 0; //分割指针 
+		//拆分发送
 		for (int i = 0; i < splitCount; i++)
 		{
+			a = splitPoint; 					//本次应答起点
+			b = a + PhpJava.PHPJAVA_MSG_MAX;
+			b = (b < cbp) ? b : cbp;			//本次应答终点
+			splitPoint = b;
 			
+			byte[] splitCountBytes = ("" + splitCount).getBytes();	//拆分数量字节数组
+			byte[] seqBytes = ("" + (i + 1)).getBytes();			//序号字节数组
+			byte[] msgBytes = new byte[b - a];						//本次发送消息体字节数组
+			System.arraycopy(callBack, a, msgBytes, 0, msgBytes.length);
+			byte[] msgLenBytes = ("" + msgBytes.length).getBytes();	//本次发送消息体长度字节数组
+			
+			
+			rsp = 0;	//初始化位移指针
+			response[rsp++] = 0x61;	//a
+			response[rsp++] = 0x3a;	//:
+			response[rsp++] = 0x33;	//3
+			response[rsp++] = 0x3a;	//:
+			response[rsp++] = 0x7b;	//{
+			response[rsp++] = 0x69;	//i  //元素1 
+			response[rsp++] = 0x3a;	//:
+			response[rsp++] = 0x30;	//0
+			response[rsp++] = 0x3b;	//;
+			response[rsp++] = 0x69;	//i
+			response[rsp++] = 0x3a;	//:
+			System.arraycopy(splitCountBytes, 0, response, rsp, splitCountBytes.length);
+			rsp += splitCountBytes.length;
+			response[rsp++] = 0x3b;	//;
+			response[rsp++] = 0x69;	//i  //元素2
+			response[rsp++] = 0x3a;	//:
+			response[rsp++] = 0x31;	//1
+			response[rsp++] = 0x3b;	//;
+			response[rsp++] = 0x69;	//i
+			response[rsp++] = 0x3a;	//:
+			System.arraycopy(seqBytes, 0, response, rsp, seqBytes.length);
+			rsp += seqBytes.length;
+			response[rsp++] = 0x3b;	//;
+			response[rsp++] = 0x69;	//i  //元素3
+			response[rsp++] = 0x3a;	//:
+			response[rsp++] = 0x32;	//2
+			response[rsp++] = 0x3b;	//;
+			response[rsp++] = 0x73;	//s
+			response[rsp++] = 0x3a;	//:
+			System.arraycopy(msgLenBytes, 0, response, rsp, msgLenBytes.length); 
+			rsp += msgLenBytes.length;
+			response[rsp++] = 0x3a;	//:
+			response[rsp++] = 0x22;	//"
+			System.arraycopy(msgBytes, 0, response, rsp, msgBytes.length); 
+			rsp += msgBytes.length;
+			response[rsp++] = 0x22;	//"
+			response[rsp++] = 0x3b;	//;
+			response[rsp++] = 0x7d;	//}
+			
+			//-- 调试
+			System.out.printf("第[%d]次response:%s\n", i, new String(response, 0, rsp));
+
+			//发送
+			MsgQ.msgsnd(PhpJava.msqid, processId + 1, response, rsp);			
+			return; 
 		}
 
 		//---------------------------------------------------
