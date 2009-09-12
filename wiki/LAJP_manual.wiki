@@ -1,4 +1,3 @@
-#labels Phase-Design,Featured,Phase-Deploy
 #LAJP帮助文档.
 
 = 总体介绍 =
