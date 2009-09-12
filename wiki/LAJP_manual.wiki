@@ -1,20 +1,53 @@
 #labels 帮助文档
-#LAJP帮助文档.
-
-= 总体介绍 =
+= LAJP帮助文档 =
 
 _基本介绍和版本信息_
 
-= LAJP运行环境要求 =
+== LAJP运行环境要求 ==
+
+LAJP是通过System V消息队列来沟通php和java进程，所以运行环境要满足php、java和System V消息队列的运行：
+ * *系统* 目前常见的Unix/Linux系统都可满足php(Apache)、java的运行，其中大部分默认支持System V消息队列。
+ * *php* php需要调用消息队列和java进程通信，按照php规范的说明,php在4.3.0版本以后支持System V消息队列。
+ * *apache* 无特殊要求，满足php要求即可。
+ * *java* java版本在1.5以后。 
+
+== LAJP安装配置 ==
+
+ * *php端安装* 部分发行版本的php默认安装不支持消息队列(System V messages)、信号量(System V semaphore)、共享内存(System V shared memory), 可以通过编译php时附带编译选项 --enable-sysvsem,--enable-sysvshm和--enable-sysvmsg添加支持。可以通过phpinfo()函数来观察php运行环境是否激活了上述功能。
+
+ * *java端安装*
+
+ * *消息队列配置*
+ 
+
+== 运行 ==
+
+ * *运行启动顺序*
+ * *php如何调用java服务方法*
+ * *java服务方法*
+ * *方法调用*
+ * *方法参数*
+ * *方法返回值*
+
+== 数据类型 ==
+
+ * *数据类型匹配规则*
+ * *php_int*
+ * *php_float*
+ * *php_double*
+ * *php_boolean*
+ * *php_string*
+ * *php_array*
+ * *php_object*
+ * *php_NULL*
+ * *java_基本数据类型*
+ * *java_字符串*
+ * *java_集合*
+ * *java_对象*
+ * *java_异常*
+ * *java_null*
+
+== 其他 ==
 
 
-= LAJP安装配置 =
-
-
-= 数据类型 =
-
-
-= 注意事项 =
-
-
-= 下一步 =
+== 下一步 ==
