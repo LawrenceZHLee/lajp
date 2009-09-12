@@ -1,0 +1,20 @@
+#labels Phase-Design,Featured,Phase-Deploy
+#LAJP帮助文档.
+
+= 总体介绍 =
+
+_基本介绍和版本信息_
+
+= LAJP运行环境要求 =
+
+
+= LAJP安装配置 =
+
+
+= 数据类型 =
+
+
+= 注意事项 =
+
+
+= 下一步 =
