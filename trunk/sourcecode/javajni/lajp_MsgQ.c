@@ -9,15 +9,15 @@
 #include <stdlib.h>  
 #include <unistd.h>  
 #include <string.h>
-#include "phpjava_MsgQ.h"
+#include "lajp_MsgQ.h"
 
-#define MSG_MAX 4096 /** 消息最大长度 */
+#define MSG_MAX 8192 /** 消息最大长度 */
 
 /*消息缓冲区*/  
 struct message  
 {  
     long msg_type;			//消息标识符  
-    char msg_text[MSG_MAX];	//消息，消息长度受系统msgmax的限制，最大为  msgmax-sizeof(long)
+    char msg_text[MSG_MAX];	//消息
 };
 
 /*
@@ -25,7 +25,7 @@ struct message
  * 参数 key: 消息队列key
  * 返回: 消息队列ID(成功) -1(失败)
  */
-JNIEXPORT jint JNICALL Java_phpjava_MsgQ_msgget
+JNIEXPORT jint JNICALL Java_lajp_MsgQ_msgget
   (JNIEnv *env, jclass obj, jint key)
 {
 	jint msqid;  /* 消息队列标识符 */
@@ -42,7 +42,7 @@ JNIEXPORT jint JNICALL Java_phpjava_MsgQ_msgget
  * Method:    msgsnd
  * Signature: (II[BI)I
  */
-JNIEXPORT jint JNICALL Java_phpjava_MsgQ_msgsnd
+JNIEXPORT jint JNICALL Java_lajp_MsgQ_msgsnd
   (JNIEnv *env, jclass obj, jint msqid, jint mstype, jbyteArray msg, jint mslen)
 {
 	if (MSG_MAX < mslen)
@@ -72,7 +72,7 @@ return 0;
  * Method:    msgrcv
  * Signature: (I[BII)I
  */
-JNIEXPORT jint JNICALL Java_phpjava_MsgQ_msgrcv
+JNIEXPORT jint JNICALL Java_lajp_MsgQ_msgrcv
   (JNIEnv *env, jclass obj, jint msqid, jbyteArray msg, jint mslen, jint mstype)
 {
 	/* 消息结构 */
@@ -104,7 +104,7 @@ JNIEXPORT jint JNICALL Java_phpjava_MsgQ_msgrcv
  * Method:    msgclose
  * Signature: (I)I
  */
-JNIEXPORT jint JNICALL Java_phpjava_MsgQ_msgclose
+JNIEXPORT jint JNICALL Java_lajp_MsgQ_msgclose
   (JNIEnv *env, jclass obj, jint msqid)
 {
 	int ret;
@@ -115,3 +115,4 @@ JNIEXPORT jint JNICALL Java_phpjava_MsgQ_msgclose
 
 	return ret;
 }
+
