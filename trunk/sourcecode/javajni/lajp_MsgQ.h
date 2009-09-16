@@ -33,10 +33,50 @@ JNIEXPORT jint JNICALL Java_lajp_MsgQ_msgrcv
 
 /*
  * Class:     lajp_MsgQ
+ * Method:    msgrcvNoBlock
+ * Signature: (I[BII)I
+ */
+JNIEXPORT jint JNICALL Java_lajp_MsgQ_msgrcvNoBlock
+  (JNIEnv *, jclass, jint, jbyteArray, jint, jint);
+
+/*
+ * Class:     lajp_MsgQ
  * Method:    msgclose
  * Signature: (I)I
  */
 JNIEXPORT jint JNICALL Java_lajp_MsgQ_msgclose
+  (JNIEnv *, jclass, jint);
+
+/*
+ * Class:     lajp_MsgQ
+ * Method:    shmget
+ * Signature: (II)I
+ */
+JNIEXPORT jint JNICALL Java_lajp_MsgQ_shmget
+  (JNIEnv *, jclass, jint, jint);
+
+/*
+ * Class:     lajp_MsgQ
+ * Method:    shmclose
+ * Signature: (I)I
+ */
+JNIEXPORT jint JNICALL Java_lajp_MsgQ_shmclose
+  (JNIEnv *, jclass, jint);
+
+/*
+ * Class:     lajp_MsgQ
+ * Method:    semget
+ * Signature: (I)I
+ */
+JNIEXPORT jint JNICALL Java_lajp_MsgQ_semget
+  (JNIEnv *, jclass, jint);
+
+/*
+ * Class:     lajp_MsgQ
+ * Method:    semclose
+ * Signature: (I)I
+ */
+JNIEXPORT jint JNICALL Java_lajp_MsgQ_semclose
   (JNIEnv *, jclass, jint);
 
 #ifdef __cplusplus
