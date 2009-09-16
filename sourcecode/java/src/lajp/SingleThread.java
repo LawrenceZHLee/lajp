@@ -1,3 +1,10 @@
+//-----------------------------------------------------------
+// LAJP-java (2009-09 http://code.google.com/p/lajp/)
+// 
+// Version: 9.09.01
+// License: http://www.apache.org/licenses/LICENSE-2.0
+//-----------------------------------------------------------
+
 package lajp;
 
 import java.beans.BeanInfo;
@@ -97,13 +104,13 @@ class SingleThread extends Thread
 		int bufLen = MsgQ.msgrcv(PhpJava.msqid, buffer, buffer.length, processId);		
 
 		//--
-		//System.out.println("接收消息1:" + new String(buffer, 0, bufLen));
+		//System.out.println("接收消息[0]:" + new String(buffer, 0, bufLen));
 		
 		//request最小长度检查
 		if (bufLen < REQUEST_MIN_LEN)
 		{
 			//构建异常消息
-			byte[] exMsg = exceptionRsp("request message error: length < REQUEST_MIN_LEN");
+			byte[] exMsg = exceptionRsp("request message length < REQUEST_MIN_LEN");
 			//发送异常应答
 			MsgQ.msgsnd(PhpJava.msqid, processId + 1, exMsg, exMsg.length);
 			
@@ -144,31 +151,37 @@ class SingleThread extends Thread
 			//接受消息n
 			bufLen = MsgQ.msgrcv(PhpJava.msqid, buffer, buffer.length, processId);		
 			//--
-			System.out.printf("接收消息[%d]:%s\n:", i, new String(buffer, 0, bufLen));
+			//System.out.printf("接收消息[%d]:%s\n:", i, new String(buffer, 0, bufLen));
 			
 			//request最小长度检查
 			if (bufLen < REQUEST_MIN_LEN)
 			{
 				//构建异常消息
-				byte[] exMsg = exceptionRsp("request message error: length < REQUEST_MIN_LEN");
+				byte[] exMsg = exceptionRsp("request message length < REQUEST_MIN_LEN");
 				//发送异常应答
 				MsgQ.msgsnd(PhpJava.msqid, processId + 1, exMsg, exMsg.length);
 				
 				return; 
 			}
 			
+			//System.out.printf("[%d]多次:%s\n", i, new String(buffer, 0, bufLen));
+			
 			//本次消息体长度
-			a = nextIndex(buffer, (byte)0x73, 0);			//消息体长度起始位置
+			a = nextIndex(buffer, (byte)0x73, 0) + 2;		//"s"+2的位置
 			b = nextIndex(buffer, (byte)0x3a, a + 1);		//消息体长度结束":"下标
 			split_msg_len = Integer.parseInt(new String(buffer, a, b - a));
 			//本次消息起始下标
 			split_msg_start = b + 2;
 			
 			//将本次request消息体copy到args
-			System.arraycopy(buffer, split_msg_start, args, 0, split_msg_len); 
+			System.arraycopy(buffer, split_msg_start, args, argsLen, split_msg_len); 
 			//args有效长度
 			argsLen += split_msg_len;
 		}
+		
+		//--
+		//System.out.printf("\nargs:%s<<<\n:", new String(args, 0, argsLen));
+		
 
 		//---------------------------------------------------
 		//	3.参数数量分析
@@ -194,7 +207,7 @@ class SingleThread extends Thread
 			e.printStackTrace();
 			
 			//构建异常消息
-			byte[] exMsg = exceptionRsp("request message error: " + e.getMessage());
+			byte[] exMsg = exceptionRsp("parse request message error: " + e.getMessage());
 			//发送异常应答
 			MsgQ.msgsnd(PhpJava.msqid, processId + 1, exMsg, exMsg.length);
 			
@@ -219,7 +232,7 @@ class SingleThread extends Thread
 		catch (Exception e)
 		{
 			//构建异常消息
-			byte[] exMsg = exceptionRsp("request message error: " + e.getMessage());
+			byte[] exMsg = exceptionRsp("parse request message error: " + e.getMessage());
 			//发送异常应答
 			MsgQ.msgsnd(PhpJava.msqid, processId + 1, exMsg, exMsg.length);
 			
@@ -266,7 +279,7 @@ class SingleThread extends Thread
 		{
 			e.printStackTrace();
 			//构建异常消息
-			byte[] exMsg = exceptionRsp("request message error: IllegalArgumentException for call method " + clazzName + "." + method.getName());
+			byte[] exMsg = exceptionRsp("IllegalArgumentException for call method " + clazzName + "." + method.getName());
 			//发送异常应答
 			MsgQ.msgsnd(PhpJava.msqid, processId + 1, exMsg, exMsg.length);
 			
@@ -276,7 +289,7 @@ class SingleThread extends Thread
 		{
 			e.printStackTrace();
 			//构建异常消息
-			byte[] exMsg = exceptionRsp("request message error: IllegalAccessException for call method " + clazzName + "." + method.getName());
+			byte[] exMsg = exceptionRsp("IllegalAccessException for call method " + clazzName + "." + method.getName());
 			//发送异常应答
 			MsgQ.msgsnd(PhpJava.msqid, processId + 1, exMsg, exMsg.length);
 			
@@ -286,7 +299,7 @@ class SingleThread extends Thread
 		{
 			e.printStackTrace();
 			//构建异常消息
-			byte[] exMsg = exceptionRsp("request message error: InvocationTargetException for call method " + clazzName + "." + method.getName());
+			byte[] exMsg = exceptionRsp("InvocationTargetException for call method " + clazzName + "." + method.getName());
 			//发送异常应答
 			MsgQ.msgsnd(PhpJava.msqid, processId + 1, exMsg, exMsg.length);
 			
@@ -345,6 +358,9 @@ class SingleThread extends Thread
 				splitCount = divisor;		//拆分数量: 整除 
 			}
 		}
+		
+		//--
+		//System.out.println("response分割数量:" + splitCount);
 		
 		int splitPoint = 0; //分割指针 
 		//拆分发送
@@ -407,7 +423,6 @@ class SingleThread extends Thread
 
 			//发送
 			MsgQ.msgsnd(PhpJava.msqid, processId + 1, response, rsp);			
-			return; 
 		}
 
 		//---------------------------------------------------
