@@ -4,7 +4,9 @@
 /* -------------------------------- */
 #include <sys/types.h>  
 #include <sys/ipc.h>  
-#include <sys/msg.h>  
+#include <sys/msg.h> 
+#include <sys/sem.h> 
+#include <sys/shm.h>
 #include <stdio.h>  
 #include <stdlib.h>  
 #include <unistd.h>  
@@ -38,6 +40,7 @@ JNIEXPORT jint JNICALL Java_lajp_MsgQ_msgget
 }
 
 /*
+ * 发送消息到消息队列
  * Class:     phpjava_MsgQ
  * Method:    msgsnd
  * Signature: (II[BI)I
@@ -68,6 +71,7 @@ return 0;
 }
 
 /*
+ * 从消息队列中获取消息（阻塞）
  * Class:     phpjava_MsgQ
  * Method:    msgrcv
  * Signature: (I[BII)I
@@ -100,6 +104,40 @@ JNIEXPORT jint JNICALL Java_lajp_MsgQ_msgrcv
 }
 
 /*
+ * 从消息队列中获取消息（非阻塞）
+ * Class:     lajp_MsgQ
+ * Method:    msgrcvNoBlock
+ * Signature: (I[BII)I
+ */
+JNIEXPORT jint JNICALL Java_lajp_MsgQ_msgrcvNoBlock
+  (JNIEnv *env, jclass obj, jint msqid, jbyteArray msg, jint mslen, jint mstype)
+{
+	/* 消息结构 */
+	struct message msgq;
+	/* 复制消息类型 */
+	msgq.msg_type = mstype;
+
+	int readmslen;
+    /* 从消息队列读出消息, IPC_NOWAIT表示不阻塞 */  
+    if((readmslen = msgrcv(msqid, &msgq, MSG_MAX, mstype, IPC_NOWAIT)) < 0)  
+    {  
+        return -1;  //消息不存在
+    }
+
+	if (mslen < readmslen)
+	{
+		perror("[JNI ERROR]msgrcv Error: jbyteArray msg too small."); 
+	}
+
+	/* 将msg中的消息复制到java字节数组中 */
+	(*env)->SetByteArrayRegion(env, msg, 0, readmslen, msgq.msg_text);
+	
+
+	return readmslen;
+}
+
+/*
+ * 删除消息队列
  * Class:     phpjava_MsgQ
  * Method:    msgclose
  * Signature: (I)I
@@ -114,5 +152,84 @@ JNIEXPORT jint JNICALL Java_lajp_MsgQ_msgclose
 	}
 
 	return ret;
+}
+
+/*
+ * 创建或获得共享内存
+ * Class:     lajp_MsgQ
+ * Method:    shmget
+ * Signature: (II)I
+ */
+JNIEXPORT jint JNICALL Java_lajp_MsgQ_shmget
+  (JNIEnv *env, jclass obj, jint key, jint size)
+{
+	jint shmid;  /* 共享内存标识符 */
+	if ((shmid = shmget(key, size, IPC_CREAT | 0666)) == -1)
+	{
+		perror("[JNI ERROR]shmget Error, ret=-1"); 
+	}
+
+	return shmid;	
+}
+
+
+/*
+ * 删除共享内存
+ * Class:     lajp_MsgQ
+ * Method:    shmclose
+ * Signature: (I)I
+ */
+JNIEXPORT jint JNICALL Java_lajp_MsgQ_shmclose
+  (JNIEnv *env, jclass obj, jint shmid)
+{
+	int ret;
+	if ((ret = shmctl(shmid, IPC_RMID, NULL)) < 0)
+	{
+		perror("[JNI ERROR]shmctl Error"); 
+	}
+
+	return ret;
+}
+
+/*
+ * 创建或获得信号量(二值)
+ * Class:     lajp_MsgQ
+ * Method:    semget
+ * Signature: (I)I
+ */
+JNIEXPORT jint JNICALL Java_lajp_MsgQ_semget
+  (JNIEnv *env, jclass obj, jint key)
+{
+	jint semid;  /* 信号量标识符 */
+	/* 创建3个信号量是为适应php的用法 */
+	if ((semid = semget(key, 3, IPC_CREAT | 0666)) == -1)
+	{
+		perror("[JNI ERROR]semget Error, ret=-1"); 
+	}
+
+	return semid;	
+
+}
+
+/*
+ * 删除信号量
+ * Class:     lajp_MsgQ
+ * Method:    semclose
+ * Signature: (I)I
+ */
+JNIEXPORT jint JNICALL Java_lajp_MsgQ_semclose
+  (JNIEnv *env, jclass obj, jint semid)
+{
+	//union semun sem_union;
+	//bzero(&sem_union, sizeof(sem_union));
+
+	int ret;
+	if ((ret = semctl(semid, 0, IPC_RMID, 0)) == -1)
+	{
+		perror("[JNI ERROR]semctl Error"); 
+	}
+
+	return ret;
+	
 }
 
