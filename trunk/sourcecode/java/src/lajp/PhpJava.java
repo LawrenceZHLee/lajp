@@ -1,3 +1,10 @@
+//-----------------------------------------------------------
+// LAJP-java (2009-09 http://code.google.com/p/lajp/)
+// 
+// Version: 9.09.01
+// License: http://www.apache.org/licenses/LICENSE-2.0
+//-----------------------------------------------------------
+
 package lajp;
 
 /**
@@ -21,12 +28,13 @@ public class PhpJava
 	static
 	{
 		//加载JNI
-		System.loadLibrary("phpjavamsgq");
+		System.loadLibrary("lajpmsgq");
 	}
 
 	public static void main(String[] args)
 	{
-		//TODO 创建消息队列
+		//初始化System V IPC
+		initIPC();
 		
 		//获得消息队列id
 		msqid = MsgQ.msgget(MSGQ_KEY);
@@ -75,7 +83,7 @@ public class PhpJava
 			processId = Integer.parseInt(new String(buffer, 23, 10));
 
 //			//--
-			//System.out.printf("消息类型:0x%x,id:%d\n",type,processId);
+			System.out.printf("processId:%d\n",processId);
 			
 			if (type == 0x73) //0x73: "s"
 			{
@@ -97,6 +105,76 @@ public class PhpJava
 			
 		}//循环结束
 
+	}
+	
+	/**
+	 * 初始化IPC
+	 */
+	public static void initIPC()
+	{
+		System.out.println("init IPC...");
+		
+		//先删除sem
+		int semid = MsgQ.semget(MSGQ_KEY);
+		if (semid == -1)
+		{
+			System.out.printf("semget(0x%x) error, can't start LAJP-JAVA.\n", MSGQ_KEY);
+			System.exit(-1);
+		}
+		if (MsgQ.semclose(semid) == -1)
+		{
+			System.out.printf("semctl(0x%x) error, can't start LAJP-JAVA.\n", MSGQ_KEY);
+			System.exit(-1);
+		}
+		
+		//重建msg
+		int msgid = MsgQ.msgget(MSGQ_KEY);
+		if (msgid == -1)
+		{
+			System.out.printf("msgget(0x%x) error, can't start LAJP-JAVA.\n", MSGQ_KEY);
+			System.exit(-1);
+		}
+		if (MsgQ.msgclose(msgid) == -1)
+		{
+			System.out.printf("msgctl(0x%x) error, can't start LAJP-JAVA.\n", MSGQ_KEY);
+			System.exit(-1);
+		}
+		if (MsgQ.msgget(MSGQ_KEY) == -1)
+		{
+			System.out.printf("msgget(0x%x) error, can't start LAJP-JAVA.\n", MSGQ_KEY);
+			System.exit(-1);
+		}
+
+		System.out.println("init [IPC] Message Queue OK...");
+
+		//重建shm
+		int shmid = MsgQ.shmget(MSGQ_KEY, 10);
+		if (shmid == -1)
+		{
+			System.out.printf("shmget(0x%x) error, can't start LAJP-JAVA.\n", MSGQ_KEY);
+			System.exit(-1);
+		}
+		if (MsgQ.shmclose(shmid) == -1)
+		{
+			System.out.printf("shmctl(0x%x) error, can't start LAJP-JAVA.\n", MSGQ_KEY);
+			System.exit(-1);
+		}
+		if (MsgQ.shmget(MSGQ_KEY, 10) == -1)
+		{
+			System.out.printf("shmctl(0x%x) error, can't start LAJP-JAVA.\n", MSGQ_KEY);
+			System.exit(-1);
+		}
+		
+		System.out.println("init [IPC] Shared Memory OK...");
+
+		//创建sem
+		if (MsgQ.semget(MSGQ_KEY) == -1)
+		{
+			System.out.printf("semget(0x%x) error, can't start LAJP-JAVA.\n", MSGQ_KEY);
+			System.exit(-1);
+		}
+
+		System.out.println("init [IPC] Semaphore OK...");
 	}
 
 }

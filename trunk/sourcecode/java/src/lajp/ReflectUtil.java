@@ -1,3 +1,10 @@
+//-----------------------------------------------------------
+// LAJP-java (2009-09 http://code.google.com/p/lajp/)
+// 
+// Version: 9.09.01
+// License: http://www.apache.org/licenses/LICENSE-2.0
+//-----------------------------------------------------------
+
 package lajp;
 
 import java.lang.reflect.Method;
@@ -106,6 +113,9 @@ public class ReflectUtil
 			//方法形参
 			Class<?>[] paramTypes = sameNameMethods.get(0).getParameterTypes();
 			
+//			System.out.println("形参数量:" + paramTypes.length);
+//			System.out.println("实参数量:" + argsClazz.length);
+			
 			//参数数量不一致
 			if (paramTypes.length != argsClazz.length)
 			{
@@ -115,14 +125,7 @@ public class ReflectUtil
 				sb.append(".");
 				sb.append(methodName);
 				sb.append("(");
-				for (int i = 0; i < argsClazz.length; i++)
-				{
-					sb.append(argsClazz[i].getName());
-					if (i != argsClazz.length - 1)
-					{
-						sb.append(",");
-					}
-				}
+				sb.append(argsClazz.length).append(" parameters");
 				sb.append(")");
 				throw new MethodNotFoundException("Can't match method: " + sb.toString()); 
 			}
@@ -159,7 +162,7 @@ public class ReflectUtil
 					sb.append("(");
 					for (int i = 0; i < argsClazz.length; i++)
 					{
-						sb.append(argsClazz[i].getName());
+						sb.append(argsClazz[i] == null ? "null" : paramTypes[i].getName());
 						if (i != argsClazz.length - 1)
 						{
 							sb.append(",");
@@ -262,14 +265,7 @@ public class ReflectUtil
 				sb.append(".");
 				sb.append(methodName);
 				sb.append("(");
-				for (int i = 0; i < argsClazz.length; i++)
-				{
-					sb.append(argsClazz[i].getName());
-					if (i != argsClazz.length - 1)
-					{
-						sb.append(",");
-					}
-				}
+				sb.append(argsClazz.length).append(" parameters");
 				sb.append(")");
 				throw new MethodNotFoundException("More than one matching methods for " + sb.toString()); 
 			}
