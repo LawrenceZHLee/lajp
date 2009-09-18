@@ -7,6 +7,8 @@
 
 package lajp;
 
+import java.util.Date;
+
 /**
  * LAJP主线程
  * @author diaoyf
@@ -15,15 +17,20 @@ package lajp;
 public class PhpJava
 {
 	/** 消息队列KEY */
-	static final int MSGQ_KEY = 0x20021230;
+	static final int IPC_KEY = 0x20021230;
 
 	/** 握手消息类型 */
 	final static int HANDSHAKE_TYPE = 1; 
 	/** 消息最大字节数 */
-	final static int PHPJAVA_MSG_MAX = 4096;
+	final static int MSG_MAX = 4096;
 	
-	/** 主消息队列id */
+	/** 消息队列id */
 	static int msqid;
+	
+	/** 关注点ProcessId */
+	static int pointProcessId = -1;
+	/** 关注点时刻 */
+	static long pointTime = System.currentTimeMillis();
 	
 	static
 	{
@@ -33,16 +40,23 @@ public class PhpJava
 
 	public static void main(String[] args)
 	{
+		System.out.println("-------------------------------------------");
+		System.out.println("- Start LAJP-JAVA...            ");
+		System.out.println("- time:" + new Date());
+		System.out.println("-------------------------------------------");
+		
 		//初始化System V IPC
 		initIPC();
 		
 		//获得消息队列id
-		msqid = MsgQ.msgget(MSGQ_KEY);
+		msqid = MsgQ.msgget(IPC_KEY);
 		//接收buffer
 		byte[] buffer = new byte[1024];
 		//接收信息长度
 		int bufLen = 1024;
 		
+		System.out.println("Start LAJP-JAVA OK...");
+
 		while (true)
 		{
 			//请求进程消息类型id
@@ -83,7 +97,7 @@ public class PhpJava
 			processId = Integer.parseInt(new String(buffer, 23, 10));
 
 //			//--
-			System.out.printf("processId:%d\n",processId);
+//			System.out.printf("processId:%d\n",processId);
 			
 			if (type == 0x73) //0x73: "s"
 			{
@@ -103,6 +117,18 @@ public class PhpJava
 				//TODO 连续请求
 			}
 			
+			//关注点判断(每过1000序列点(500偶数次),且上次关键点已超过5分钟)
+			if (System.currentTimeMillis() - pointTime > 300000
+					&& processId % 1000 == 0)
+			{
+				//队列垃圾回收
+				new PointGC(pointProcessId).start();
+				
+				//更新关注点
+				pointTime = System.currentTimeMillis();
+				pointProcessId = processId;
+			}
+			
 		}//循环结束
 
 	}
@@ -112,65 +138,63 @@ public class PhpJava
 	 */
 	public static void initIPC()
 	{
-		System.out.println("init IPC...");
-		
 		//先删除sem
-		int semid = MsgQ.semget(MSGQ_KEY);
+		int semid = MsgQ.semget(IPC_KEY);
 		if (semid == -1)
 		{
-			System.out.printf("semget(0x%x) error, can't start LAJP-JAVA.\n", MSGQ_KEY);
+			System.out.printf("semget(0x%x) error, can't start LAJP-JAVA.\n", IPC_KEY);
 			System.exit(-1);
 		}
 		if (MsgQ.semclose(semid) == -1)
 		{
-			System.out.printf("semctl(0x%x) error, can't start LAJP-JAVA.\n", MSGQ_KEY);
+			System.out.printf("semclose(0x%x) error, can't start LAJP-JAVA.\n", IPC_KEY);
 			System.exit(-1);
 		}
 		
 		//重建msg
-		int msgid = MsgQ.msgget(MSGQ_KEY);
+		int msgid = MsgQ.msgget(IPC_KEY);
 		if (msgid == -1)
 		{
-			System.out.printf("msgget(0x%x) error, can't start LAJP-JAVA.\n", MSGQ_KEY);
+			System.out.printf("msgget(0x%x) error, can't start LAJP-JAVA.\n", IPC_KEY);
 			System.exit(-1);
 		}
 		if (MsgQ.msgclose(msgid) == -1)
 		{
-			System.out.printf("msgctl(0x%x) error, can't start LAJP-JAVA.\n", MSGQ_KEY);
+			System.out.printf("msgclose(0x%x) error, can't start LAJP-JAVA.\n", IPC_KEY);
 			System.exit(-1);
 		}
-		if (MsgQ.msgget(MSGQ_KEY) == -1)
+		if (MsgQ.msgget(IPC_KEY) == -1)
 		{
-			System.out.printf("msgget(0x%x) error, can't start LAJP-JAVA.\n", MSGQ_KEY);
+			System.out.printf("msgget(0x%x) error, can't start LAJP-JAVA.\n", IPC_KEY);
 			System.exit(-1);
 		}
 
 		System.out.println("init [IPC] Message Queue OK...");
 
 		//重建shm
-		int shmid = MsgQ.shmget(MSGQ_KEY, 10);
+		int shmid = MsgQ.shmget(IPC_KEY, 10);
 		if (shmid == -1)
 		{
-			System.out.printf("shmget(0x%x) error, can't start LAJP-JAVA.\n", MSGQ_KEY);
+			System.out.printf("shmget(0x%x) error, can't start LAJP-JAVA.\n", IPC_KEY);
 			System.exit(-1);
 		}
 		if (MsgQ.shmclose(shmid) == -1)
 		{
-			System.out.printf("shmctl(0x%x) error, can't start LAJP-JAVA.\n", MSGQ_KEY);
+			System.out.printf("shmclose(0x%x) error, can't start LAJP-JAVA.\n", IPC_KEY);
 			System.exit(-1);
 		}
-		if (MsgQ.shmget(MSGQ_KEY, 10) == -1)
+		if (MsgQ.shmget(IPC_KEY, 10) == -1)
 		{
-			System.out.printf("shmctl(0x%x) error, can't start LAJP-JAVA.\n", MSGQ_KEY);
+			System.out.printf("shmctl(0x%x) error, can't start LAJP-JAVA.\n", IPC_KEY);
 			System.exit(-1);
 		}
 		
 		System.out.println("init [IPC] Shared Memory OK...");
 
 		//创建sem
-		if (MsgQ.semget(MSGQ_KEY) == -1)
+		if (MsgQ.semget(IPC_KEY) == -1)
 		{
-			System.out.printf("semget(0x%x) error, can't start LAJP-JAVA.\n", MSGQ_KEY);
+			System.out.printf("semget(0x%x) error, can't start LAJP-JAVA.\n", IPC_KEY);
 			System.exit(-1);
 		}
 
