@@ -12,7 +12,7 @@ package lajp;
  * @author diaoyf
  *
  */
-class MsgQ
+public class MsgQ
 {	
 	/**
 	 * 创建或获得消息队列,返回消息队列标识符msqid.

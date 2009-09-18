@@ -61,12 +61,12 @@ class SingleThread extends Thread
 	Object[] argsValue;
 	
 	/** 应答字节数组 */
-	byte[] callBack = new byte[PhpJava.PHPJAVA_MSG_MAX];
+	byte[] callBack = new byte[PhpJava.MSG_MAX];
 	/** 应答字节数组指针，指向数组中有效字节的下一个 */
 	int cbp = 0;
 	
 	/** 消息队列发送缓冲区 */
-	byte[] response = new byte[PhpJava.PHPJAVA_MSG_MAX * 2];
+	byte[] response = new byte[PhpJava.MSG_MAX * 2];
 	/** 发送缓冲区数组指针，指向数组中有效字节的下一个 */
 	int rsp = 0;
 	
@@ -139,7 +139,7 @@ class SingleThread extends Thread
 //				split_count, split_seq, split_msg_len, new String(buffer, split_msg_start, split_msg_len));
 		
 		//根据拆分数量初始化
-		args = new byte[split_count * PhpJava.PHPJAVA_MSG_MAX + split_count * 128];
+		args = new byte[split_count * PhpJava.MSG_MAX + split_count * 128];
 		//将第一个request消息体copy到args
 		System.arraycopy(buffer, split_msg_start, args, 0, split_msg_len); 
 		//args有效长度
@@ -341,8 +341,8 @@ class SingleThread extends Thread
 		//---------------------------------------------------
 		//计算response消息体拆分数量
 		int splitCount = 0; //拆分数量初始化
-		int divisor = cbp / PhpJava.PHPJAVA_MSG_MAX;	//除数
-		int remainder = cbp % PhpJava.PHPJAVA_MSG_MAX;	//余数
+		int divisor = cbp / PhpJava.MSG_MAX;	//除数
+		int remainder = cbp % PhpJava.MSG_MAX;	//余数
 		if (divisor < 1)
 		{
 			splitCount = 1;
@@ -367,7 +367,7 @@ class SingleThread extends Thread
 		for (int i = 0; i < splitCount; i++)
 		{
 			a = splitPoint; 					//本次应答起点
-			b = a + PhpJava.PHPJAVA_MSG_MAX;
+			b = a + PhpJava.MSG_MAX;
 			b = (b < cbp) ? b : cbp;			//本次应答终点
 			splitPoint = b;
 			
