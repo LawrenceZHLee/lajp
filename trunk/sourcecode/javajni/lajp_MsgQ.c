@@ -33,7 +33,7 @@ JNIEXPORT jint JNICALL Java_lajp_MsgQ_msgget
 	jint msqid;  /* 消息队列标识符 */
 	if ((msqid = msgget(key, IPC_CREAT | 0666)) == -1)
 	{
-		perror("[JNI ERROR]msgget Error, ret=-1"); 
+		perror("[JNI ERROR]msgget Error"); 
 	}
 
 	return msqid;
@@ -166,7 +166,7 @@ JNIEXPORT jint JNICALL Java_lajp_MsgQ_shmget
 	jint shmid;  /* 共享内存标识符 */
 	if ((shmid = shmget(key, size, IPC_CREAT | 0666)) == -1)
 	{
-		perror("[JNI ERROR]shmget Error, ret=-1"); 
+		perror("[JNI ERROR]shmget Error"); 
 	}
 
 	return shmid;	
@@ -204,7 +204,7 @@ JNIEXPORT jint JNICALL Java_lajp_MsgQ_semget
 	/* 创建3个信号量是为适应php的用法 */
 	if ((semid = semget(key, 3, IPC_CREAT | 0666)) == -1)
 	{
-		perror("[JNI ERROR]semget Error, ret=-1"); 
+		perror("[JNI ERROR]semget Error"); 
 	}
 
 	return semid;	
@@ -220,9 +220,6 @@ JNIEXPORT jint JNICALL Java_lajp_MsgQ_semget
 JNIEXPORT jint JNICALL Java_lajp_MsgQ_semclose
   (JNIEnv *env, jclass obj, jint semid)
 {
-	//union semun sem_union;
-	//bzero(&sem_union, sizeof(sem_union));
-
 	int ret;
 	if ((ret = semctl(semid, 0, IPC_RMID, 0)) == -1)
 	{
