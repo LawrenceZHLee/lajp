@@ -1,21 +1,73 @@
 #labels 帮助文档
 = LAJP帮助文档 =
 
-_基本介绍和版本信息_
+JAJP是用来解决PHP和Java通讯的一项技术，在PHP中可以通过"正常"的PHP函数来调用Java的一个方法，如同下面的一个例子：
+
+java(service):
+{{{
+package aaa.bbb.ccc;
+public class MyClass
+{
+  public static final int addMethod(int a, int b)
+  {
+    return a + b;
+  }
+}
+}}}
+
+php(client):
+{{{
+$ret = lajp_call("aaa.bbb.ccc.MyClass::addMethod", 10, 20);
+echo $ret;  //30
+}}}
+
+LAJP有两个核心功能：
+ * 优雅地解决了PHP和Java间的通讯难题
+ * 合理地、自动地进行PHP和Java间数据类型转换
+
+在LAJP的当前版本中，使用两种技术进行PHP和Java间的通信，我对它们分别命名为："消息队列版"和"socket版"。它们各自有优缺点，在使用中应根据程序所在环境特点加以选择：
+ * *消息队列* 以System V的消息队列作为PHP和Java间的通信媒介，优点是理论速度快，占用资源较小；缺点是只能使用在支持System V的系统中，可以用于Unix/Linux/BSD系统，但不能用于windows。
+ * *socket* 以TCP/IP作为PHP和Java间的通信媒介，优点是无系统限制(所有系统都支持)；缺点是理论速度慢，占用资源较大。
 
 == LAJP运行环境要求 ==
 
-LAJP是通过System V消息队列来沟通php和java进程，所以运行环境要满足php、java和System V消息队列的运行：
- * *系统* 目前常见的Unix/Linux系统都可满足php(Apache)、java的运行，其中大部分默认支持System V消息队列。
- * *php* php需要调用消息队列和java进程通信，按照php规范的说明,php在4.3.0版本以后支持System V消息队列。
- * *apache* 无特殊要求，满足php要求即可。
- * *java* java版本在1.5以后。 
+"消息队列版"和"socket版"对运行环境的要求是不同的，下面分别加以阐述：
+
+ * *消息队列版*
+
+运行环境需要满足System V消息队列的运行：
+
+*系统* 目前常见的Unix/Linux系统都可满足php(Apache)、java的运行，其中大部分默认支持System V消息队列。
+
+*php* php需要调用消息队列和java进程通信，按照php规范的说明,php在4.3.0版本以后支持System V消息队列。
+
+*apache* 无特殊要求，满足php要求即可。
+
+*java* java版本在1.5以后。 
+
+ * *socket版*
+
+*系统* 目前很难找到不支持tcp/ip的系统。
+
+*php* 按照php规范的说明,php版本>=4.1.0支持socket
+
+*apache* 无特殊要求，满足php要求即可。
+
+*java* java版本在1.5以后。 
+
 
 == LAJP安装配置 ==
 
- * *php端安装* 部分发行版本的php默认安装不支持消息队列(System V messages)、信号量(System V semaphore)、共享内存(System V shared memory), 可以通过编译php时附带编译选项 --enable-sysvsem,--enable-sysvshm和--enable-sysvmsg添加支持。可以通过phpinfo()函数来观察php运行环境是否激活了上述功能。
+"消息队列版"和"socket版"的安装也是不同的，下面分别加以阐述：
 
- * *java端安装*
+ * *消息队列版*
+
+*php端安装* 部分发行版本的php默认安装不支持消息队列(System V messages)、信号量(System V semaphore)、共享内存(System V shared memory), 在编译php时需附带编译选项 --enable-sysvsem,--enable-sysvshm和--enable-sysvmsg添加支持。可以通过phpinfo()函数来观察php运行环境是否激活了上述功能。
+
+*java端安装* 首先需要安装jsdk5以上版本（注意：在不同环境中java的安装是不同的，具体请参考SUN公司的Java安装帮助文档)，其次需要编译安装Java调用消息队列的JNI动态库，这是LAJP所有安装配置中最复杂的一个，详情如下：
+    # 配置好c语言编译环境
+    # 将源代码中的3个文件：lajp_MsgQ.c,lajp_MsgQ.h,make.sh
+
 
  * *消息队列配置*
  
