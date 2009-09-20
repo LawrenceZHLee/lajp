@@ -121,8 +121,11 @@ public class PhpJava
 			if (System.currentTimeMillis() - pointTime > 300000
 					&& processId % 1000 == 0)
 			{
-				//队列垃圾回收
-				new PointGC(pointProcessId).start();
+				if (pointProcessId < processId)
+				{
+					//队列垃圾回收
+					new PointGC(pointProcessId).start();
+				}
 				
 				//更新关注点
 				pointTime = System.currentTimeMillis();
