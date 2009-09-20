@@ -37,23 +37,23 @@ LAJP有两个核心功能：
 
 运行环境需要满足System V消息队列的运行：
 
-*系统* 目前常见的Unix/Linux系统都可满足php(Apache)、java的运行，其中大部分默认支持System V消息队列。
+ * *系统* 目前常见的Unix/Linux系统都可满足php(Apache)、java的运行，其中大部分默认支持System V消息队列。
 
-*php* php需要调用消息队列和java进程通信，按照php规范的说明,php在4.3.0版本以后支持System V消息队列。
+ * *php* php需要调用消息队列和java进程通信，按照php规范的说明,php在4.3.0版本以后支持System V消息队列。
 
-*apache* 无特殊要求，满足php要求即可。
+ * *apache* 无特殊要求，满足php要求即可。
 
-*java* java版本在1.5以后。 
+ * *java* java版本在1.5以后。 
 
 === socket版 ===
 
-*系统* 目前很难找到不支持tcp/ip的系统。
+ * *系统* 目前很难找到不支持tcp/ip的系统。
 
-*php* 按照php规范的说明,php版本>=4.1.0支持socket
+ * *php* 按照php规范的说明,php版本>=4.1.0支持socket
 
-*apache* 无特殊要求，满足php要求即可。
+ * *apache* 无特殊要求，满足php要求即可。
 
-*java* java版本在1.5以后。 
+ * *java* java版本在1.5以后。 
 
 
 == LAJP安装配置 ==
@@ -62,9 +62,9 @@ LAJP有两个核心功能：
 
 === 消息队列版 ===
 
-*php端安装* 部分发行版本的php默认安装不支持消息队列(System V messages)、信号量(System V semaphore)、共享内存(System V shared memory), 在编译php时需附带编译选项 --enable-sysvsem,--enable-sysvshm和--enable-sysvmsg添加支持。可以通过phpinfo()函数来观察php运行环境是否激活了上述功能。
+ * *php端安装* 部分发行版本的php默认安装不支持消息队列(System V messages)、信号量(System V semaphore)、共享内存(System V shared memory), 在编译php时需附带编译选项 --enable-sysvsem,--enable-sysvshm和--enable-sysvmsg添加支持。可以通过phpinfo()函数来观察php运行环境是否激活了上述功能。
 
-*java端安装* 首先需下载lajp-_version_.jar，并安装jsdk5以上版本（注意：在不同环境中java的安装是不同的，具体请参考SUN公司的Java安装帮助文档)，其次需要编译安装Java调用消息队列的JNI动态库，这是LAJP所有安装配置中最复杂的一个，详情如下：
+ * *java端安装* 首先需下载lajp-_version_.jar，并安装jsdk5以上版本（注意：在不同环境中java的安装是不同的，具体请参考SUN公司的Java安装帮助文档)，其次需要编译安装Java调用消息队列的JNI动态库，这是LAJP所有安装配置中最复杂的一个，详情如下：
     # 配置好c语言编译环境
     # 将源代码中的3个文件：lajp_MsgQ.c,lajp_MsgQ.h,make.sh复制到某个目录，确保make.sh有执行权限，按注释要求编辑make.sh
 {{{
@@ -95,15 +95,13 @@ gcc lajp_MsgQ.c --share -I. -I/usr/lib/jvm/java-6-sun/include
     # 编译 ： 执行 ./make.sh 编译
     # 部署编译好的liblajpmsgq.so库文件： 如果编译成功，会生成liblajpmsgq.so文件，将它复制到任一个"java.library.path"路径中，"java.library.path"路径可以通过java程序侦测: System.out.println(System.getProperties().getProperty("java.library.path"))
 
-
-
-*消息队列配置*  
+ * *消息队列配置*  
  
 === socket版 ===
 
-*php端安装* 无特殊要求，需通过phpinfo()函数来检查php运行环境是否激活socket功能。
+ * *php端安装* 无特殊要求，需通过phpinfo()函数来检查php运行环境是否激活socket功能。
 
-*java端安装* 需下载lajp-socket-_version_.jar，并安装jsdk5以上版本（注意：在不同环境中java的安装是不同的，具体请参考SUN公司的Java安装帮助文档)。
+ * *java端安装* 需下载lajp-socket-_version_.jar，并安装jsdk5以上版本（注意：在不同环境中java的安装是不同的，具体请参考SUN公司的Java安装帮助文档)。
 
 == 运行 ==
 
@@ -152,10 +150,18 @@ public class MyClass
 
 php语言规范定义了8中数据类型：boolean、int、float、string、array、object、resource、NULL；java语言的数据类型分为2类：基本数据类型和对象类型，基本数据类型有byte、short、int、long、 char、boolean、float、double, 对象类型包括数组、集合、javaBean等。在LAJP架构中，php数据以参数形式传递给Java方法，Java方法的返回值再回传给php调用程序，在调用过程中，php数据“自动”转换为Java数据，反之亦然。
 
-要做到数据类型“自动”传递，在LAJP中建立了以下规则：
- # 数据类型
+并不是所有数据类型都可以转换，在LAJP中建立了以下转换规则：
 
- * *数据类型匹配规则*
+|| || *php* || *java* || *说明* ||
+|| 布尔 || boolean || boolean ||  ||
+|| 整形 ||int||int||  ||
+|| 浮点 ||float||double|| 在php中float和double含义相同 ||
+|| 字符串 ||string||java.lang.String||  ||
+|| 顺序集合 ||array(_key:int_)||java.util.List|| php中array的每个元素的key类型必须是int ||
+|| key-value集合 ||array(_key:string_)||java.util.Map|| php中array的每个元素的key类型必须是string ||
+|| 对象 ||object|| _JavaBean_ ||  ||
+|| 空 ||NULL||null||  ||
+
  * *php_int*
  * *php_float*
  * *php_double*
