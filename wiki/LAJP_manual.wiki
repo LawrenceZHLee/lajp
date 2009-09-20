@@ -217,7 +217,7 @@ PHP对象被映射到Jave的JavaBean对象，这意味着PHP类中的每一个�
 
 目前只支持PHP4规范对象转换到Java，这是因为在LAJP内部转换时需要将PHP对象数据序列化，PHP5对象不能转换，因此在编写lajp_call函数的传参对象时需要注意书写规范。
 
-目前也不支持PHP中的命名空间(Namespaces)，在PHP中用"_"表示Java中的"."，如要映射到Java的"com.foo.MyClass"类，需要在PHP中定义类"com_foo_MyClass"。
+目前也不支持PHP中的命名空间(Namespaces)，在PHP中用{{{"_"}}}表示Java中的{{{"."}}}，如要映射到Java的{{{"com.foo.MyClass"}}}类，需要在PHP中定义类{{{"com_foo_MyClass"}}}。
 {{{
 //映射到Java的com.foo.User类
 class com_foo_User
@@ -430,7 +430,8 @@ import java.util.Set;
 public class Objtest
 {
   //服务方法
-  public static final int method1(String p1, List<?> p2, cn.com.ail.test.Bean p3, cn.com.aili.test.Bean p4)
+  public static final int method1(String p1, List<?> p2, 
+      cn.com.ail.test.Bean p3, cn.com.aili.test.Bean p4)
   {
     System.out.printf("p1:%s\n", p1);
 		
@@ -498,14 +499,37 @@ public class Objtest
 }}}
 
  * *php_NULL*
+
+PHP中的NUL，对应Java中的null。
+
  * *java_基本数据类型*
+
+Java中的基本数据类型，在转换时只能使用其中的int,double和boolean，参见表1。
+
  * *java_字符串*
+
+Java中的java.util.String，转换为PHP的string。
+
  * *java_集合*
+
+在Java的集合转换中，只能使用{{{java.util.List}}}及其子类，和{{{java.util.Map}}}及其子类，都对应转换为PHP的array。
+
  * *java_对象*
+
+Java中要转换的对象，必须符合JavaBean规范。
+
  * *java_异常*
+
+Java服务方法可以抛出异常，LAJP将捕获此异常，并转换为PHP异常抛给调用者。
+
  * *java_null*
+
+Java中的null，将转换为PHP的NULL。
 
 == 其他 ==
 
+暂无。
 
-== 下一步 ==
+== 下一步计划 ==
+
+暂不公布。
