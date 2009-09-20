@@ -1,4 +1,4 @@
-#labels 帮助文档
+#labels LAJP帮助文档
 = LAJP帮助文档 =
 
 JAJP是用来解决PHP和Java通讯的一项技术，在PHP中可以通过"正常"的PHP函数来调用Java的一个方法，如同下面的一个例子：
@@ -25,7 +25,7 @@ LAJP有两个核心功能：
  # 优雅地解决了PHP怎样调用Java方法间的通讯难题
  # 合理地、自动地进行PHP和Java间数据类型转换
 
-在LAJP的当前版本中，使用两种技术进行PHP和Java间的通信，我对它们分别命名为："消息队列版"和"socket版"。它们各自有优缺点，在使用中应根据程序所在环境特点加以选择：
+在LAJP的当前版本中，使用两种技术进行PHP和Java间的通信，我对它们分别命名为： *消息队列版* 和 *socket版* 。它们各自有优缺点，在使用中应根据程序所在环境特点加以选择：
  * *消息队列* 以System V的消息队列作为PHP和Java间的通信媒介，优点是理论速度快，占用资源较小；缺点是只能使用在支持System V的系统中，可以用于Unix/Linux/BSD系统，但不能用于windows。
  * *socket* 以TCP/IP作为PHP和Java间的通信媒介，优点是无系统限制(所有系统都支持)；缺点是理论速度慢，占用资源较大。
 
@@ -33,7 +33,7 @@ LAJP有两个核心功能：
 
 "消息队列版"和"socket版"对运行环境的要求是不同的，下面分别加以阐述：
 
- * *消息队列版*
+=== 消息队列版 ===
 
 运行环境需要满足System V消息队列的运行：
 
@@ -45,7 +45,7 @@ LAJP有两个核心功能：
 
 *java* java版本在1.5以后。 
 
- * *socket版*
+=== socket版 ===
 
 *系统* 目前很难找到不支持tcp/ip的系统。
 
@@ -60,11 +60,11 @@ LAJP有两个核心功能：
 
 "消息队列版"和"socket版"的安装也是不同的，下面分别加以阐述：
 
- * *消息队列版*
+=== 消息队列版 ===
 
 *php端安装* 部分发行版本的php默认安装不支持消息队列(System V messages)、信号量(System V semaphore)、共享内存(System V shared memory), 在编译php时需附带编译选项 --enable-sysvsem,--enable-sysvshm和--enable-sysvmsg添加支持。可以通过phpinfo()函数来观察php运行环境是否激活了上述功能。
 
-*java端安装* 首先需要安装jsdk5以上版本（注意：在不同环境中java的安装是不同的，具体请参考SUN公司的Java安装帮助文档)，其次需要编译安装Java调用消息队列的JNI动态库，这是LAJP所有安装配置中最复杂的一个，详情如下：
+*java端安装* 首先需下载lajp-_version_.jar，并安装jsdk5以上版本（注意：在不同环境中java的安装是不同的，具体请参考SUN公司的Java安装帮助文档)，其次需要编译安装Java调用消息队列的JNI动态库，这是LAJP所有安装配置中最复杂的一个，详情如下：
     # 配置好c语言编译环境
     # 将源代码中的3个文件：lajp_MsgQ.c,lajp_MsgQ.h,make.sh复制到某个目录，确保make.sh有执行权限，按注释要求编辑make.sh
 {{{
@@ -79,7 +79,8 @@ LAJP有两个核心功能：
 #  目标文件: liblajpmsgq.so
 #  编译参数:
 #    --share  : 编译为动态库
-#    -I       : 搜索编译JNI需要的.h文件, 注意"/usr/lib/jvm/java-6-sun/"要换成编译环境中的JAVA_HOME路径
+#    -I       : 搜索编译JNI需要的.h文件, 注意"/usr/lib/jvm/java-6-sun/"要换成编译环境中
+#               的JAVA_HOME路径
 #
 #  liblajpmsgq.so发布 : 
 #    复制到<java.library.path>中，可通过java程序
@@ -88,23 +89,71 @@ LAJP有两个核心功能：
 # -----------------------------------------------------------
 
 
-gcc lajp_MsgQ.c --share -I. -I/usr/lib/jvm/java-6-sun/include -I/usr/lib/jvm/java-6-sun/include/linux -o liblajpmsgq.so
+gcc lajp_MsgQ.c --share -I. -I/usr/lib/jvm/java-6-sun/include 
+-I/usr/lib/jvm/java-6-sun/include/linux -o liblajpmsgq.so
 }}}
-    # 部署编译好的liblajpmsgq.so库文件： 如果编译成功，会生成liblajpmsgq.so文件，将它复制到任一个"java.library.path"路径中。
+    # 编译 ： 执行 ./make.sh 编译
+    # 部署编译好的liblajpmsgq.so库文件： 如果编译成功，会生成liblajpmsgq.so文件，将它复制到任一个"java.library.path"路径中，"java.library.path"路径可以通过java程序侦测: System.out.println(System.getProperties().getProperty("java.library.path"))
 
-    # 消息队列配置 
+
+
+*消息队列配置*  
  
+=== socket版 ===
+
+*php端安装* 无特殊要求，需通过phpinfo()函数来检查php运行环境是否激活socket功能。
+
+*java端安装* 需下载lajp-socket-_version_.jar，并安装jsdk5以上版本（注意：在不同环境中java的安装是不同的，具体请参考SUN公司的Java安装帮助文档)。
 
 == 运行 ==
 
- * *运行启动顺序*
+ * *运行启动顺序* 在LAJP中，PHP作为客户(client)调用Java服务(service),启动顺序：
+    # Java服务
+    # php程序
+
  * *php如何调用java服务方法*
+
+php调用java服务方法，需要导入包含"lajp_call()"函数的文件，文件可在下载包中找到：java_php.php对应"消息队列版", java_php_socket.php对应"socket版"，php程序调用示例：
+{{{
+require_once("../lajp/php_java.php"); //导入java_php.php, 这里使用"消息队列版"
+
+$a = 1;
+$b = 2;
+//调用Java端com.foo.MyClass类中的whichMax方法，并传入两个整形参数，Java方法返回值赋于$c。
+$c = ("com.foo.MyClass::whichMax", $a, $b); 
+}}}
+有关传参和返回值类型的要求和转换关系请查看"数据类型"章节。
+
  * *java服务方法*
- * *方法调用*
- * *方法参数*
- * *方法返回值*
+
+要作为LAJP中Java端的服务方法，和普通的Java方法的区别有两个：
+    # 方法必须声明为 *public* *static* *final*
+    # 方法参数类型和返回值类型需要符合一定要求（请查看"数据类型"章节）
+上面的示例对应的Java服务代码:
+{{{
+package com.foo;
+public class MyClass
+{
+  public static final whichMax(int v1, int v2)
+  {
+    if (v1 > v2)
+    {
+      return v1;
+    }
+    else
+    {
+      return v2;
+    }
+  }
+}
+}}}
 
 == 数据类型 ==
+
+php语言规范定义了8中数据类型：boolean、int、float、string、array、object、resource、NULL；java语言的数据类型分为2类：基本数据类型和对象类型，基本数据类型有byte、short、int、long、 char、boolean、float、double, 对象类型包括数组、集合、javaBean等。在LAJP架构中，php数据以参数形式传递给Java方法，Java方法的返回值再回传给php调用程序，在调用过程中，php数据“自动”转换为Java数据，反之亦然。
+
+要做到数据类型“自动”传递，在LAJP中建立了以下规则：
+ # 数据类型
 
  * *数据类型匹配规则*
  * *php_int*
