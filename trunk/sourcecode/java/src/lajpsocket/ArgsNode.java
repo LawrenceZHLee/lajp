@@ -6,7 +6,7 @@
 //-----------------------------------------------------------
 
 package lajpsocket;
-import java.util.ArrayList;
+import java.util.ArrayList; 
 
 /**
  * 参数节点
