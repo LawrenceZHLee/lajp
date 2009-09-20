@@ -7,6 +7,10 @@
 
 package lajp;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -270,7 +274,51 @@ public class ReflectUtil
 				throw new MethodNotFoundException("More than one matching methods for " + sb.toString()); 
 			}
 		}
+	}
+	
+	/**
+	 * 将JavaBean转换为PHP显示方式
+	 * @param clazzName JavaBean类
+	 * @return
+	 */
+	public static final String javaBean2Php(String clazzName)
+	{
+		Class<?> javaBean = null;
+		try
+		{
+			javaBean = getClass(clazzName);
+		}
+		catch (ClassNotFoundException e)
+		{
+			e.printStackTrace();
+			
+			return "Can't find JavaBean Class: " + clazzName;
+		}
 		
-
+		BeanInfo beanInfo;
+		try
+		{
+			beanInfo = Introspector.getBeanInfo(javaBean, Object.class);
+		}
+		catch (IntrospectionException e)
+		{
+			//内省异常
+			e.printStackTrace();
+			return "IntrospectionException for " + javaBean;
+		}
+		
+		//获得javaBean属性集
+		PropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
+		
+		StringBuilder ret = new StringBuilder();
+		ret.append(clazzName.replace('.', '_')).append("<br>\n");
+		ret.append("{").append("<br>\n");
+		for (PropertyDescriptor pd : pds) 
+		{
+			ret.append("&nbsp;&nbsp;&nbsp;&nbsp;").append("var $").append(pd.getName()).append(";<br>\n");
+		}
+		ret.append("}").append("<br>\n");
+		
+		return ret.toString();
 	}
 }
