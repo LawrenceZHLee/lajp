@@ -25,7 +25,7 @@ rpm -Uvh cpp-3.4.4-2.i386.rpm
 rpm -Uvh gcc-3.4.4-2.i386.rpm
 }}}
 
-== Redhat AS4 ==
+== Redhat AS5 ==
 
 最好在安装系统时就选择安装编译环境，否则会遇到rpm的相互依赖问题。
 
