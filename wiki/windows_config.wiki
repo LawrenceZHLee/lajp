@@ -1,4 +1,5 @@
 #labels Windows环境注意事项
+----
 == called to undefined function socket_create 错误 ==
 
 安装好Apache和PHP后，调用lajp_call(), 出现上述故障。
@@ -40,3 +41,14 @@ AddType application/x-httpd-php .php
 }}}
 
  * 检查php目录下有没有php_sockets.dll文件，如果没有从ext目录中copy过来，php5搜索路径在php，而不是php/ext。
+----
+== 500 内部服务器错误 ==
+php页面出错时只显示"500 内部服务器错误",不显示具体出错的语句，可以通过修改php.ini配置文件:
+{{{
+display_errors = Off 
+}}}
+改为:
+{{{
+display_errors = On
+}}}
+即可打开报错调试开关。
