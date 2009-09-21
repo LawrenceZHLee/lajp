@@ -65,7 +65,7 @@ LAJP有两个核心功能：
  * *php端安装* 部分发行版本的php默认安装不支持消息队列(System V messages)、信号量(System V semaphore)、共享内存(System V shared memory), 在编译php时需附带编译选项 --enable-sysvsem,--enable-sysvshm和--enable-sysvmsg添加支持。可以通过phpinfo()函数来观察php运行环境是否激活了上述功能。
 
  * *java端安装* 首先需下载lajp-_version_.jar，并安装jsdk5以上版本（注意：在不同环境中java的安装是不同的，具体请参考SUN公司的Java安装帮助文档)，其次需要编译安装Java调用消息队列的JNI动态库，这是LAJP所有安装配置中最复杂的一个，详情如下：
-    # 配置好c语言编译环境
+    # 配置好c语言编译环境，[http://code.google.com/p/lajp/wiki/installGCC 在Linux上安装GCC]
     # 将源代码中的3个文件：lajp_MsgQ.c,lajp_MsgQ.h,make.sh复制到某个目录，确保make.sh有执行权限，按注释要求编辑make.sh
 {{{
 #!/bin/sh
