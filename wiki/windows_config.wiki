@@ -9,8 +9,8 @@
 执行：
 
 {{{
-<?
-php var_dump(extension_loaded("sockets")); 
+<?php 
+var_dump(extension_loaded("sockets")); 
 ?>
 }}}
 
@@ -34,13 +34,21 @@ LoadModule php5_module c:/PHP/php5apache2_2.dll
 PHPIniDir "c:/PHP/"
 AddType application/x-httpd-php .php
 
-# 按CGI模式加载
+# 按CGI模式加载, c:/php/是php的安装目录
 #ScriptAlias /php/ "c:/php/"
 #AddType application/x-httpd-php .php
 #Action application/x-httpd-php "/php/php-cgi.exe"
 }}}
 
  * 检查php目录下有没有php_sockets.dll文件，如果没有从ext目录中copy过来，php5搜索路径在php，而不是php/ext。
+
+ * 尝试以命令行方式运行，如果命令行可以，将php.ini复制到c:\windows，再试。
+{{{
+//命令行方式运行, php.exe和php.ini在php安装目录下
+php.exe -c php.ini <路径>\php文件
+}}}
+ 
+
 ----
 == 500 内部服务器错误 ==
 php页面出错时只显示"500 内部服务器错误",不显示具体出错的语句，可以通过修改php.ini配置文件:
