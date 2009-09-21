@@ -36,6 +36,6 @@ rpm -ivh kernel-headers-2.6.18-53.el5.i386.rpm
 rpm -ivh glibc-headers-2.5-18.i386.rpm
 rpm -ivh glibc-devel-2.5-18.i386.rpm
 rpm -ivh cpp-4.1.2-14.el5.i386.rpm 
-rpm -ivh  gcc-4.1.2-14.el5.i386.rpm
+rpm -ivh gcc-4.1.2-14.el5.i386.rpm
 rpm -ivh libgomp-4.1.2-14.el5.i386.rpm
 }}}
