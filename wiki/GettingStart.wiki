@@ -1,0 +1,20 @@
+#labels Gettingstarted,HelloWorld
+= 第一步 下载 =
+
+在[http://code.google.com/p/lajp/downloads/list Downloads标签页]中下载压缩文件{{{lajp_<version>.tar.gz}}}，或{{{lajp-socket_<version>.tar.gz}}}，{{{<version>}}}表示版本号，LAJP的发行版本并不是通常1.0,1.1的递增形式，而是以发行时间所在的年月作为版本号，比如{{{lajp_9.09.tar.gz}}}表示2009年9月发布。
+
+_针对windows用户，还提供了zip格式下载文件。_
+
+下载文件名中有socket的，如{{{lajp-socket_9.09.tar.gz}}}表示socket通讯模式发行版，没有socket的表示消息队列通讯模式发行版，二者区别在[http://code.google.com/p/lajp/wiki/LAJP_manual LAJP帮助文档]中有详细描述。
+
+_Windows环境只能安装socket版，Unix/Linux环境两者都可以。_
+
+= 第二步 安装和配置 =
+
+在安装LAJP之前需要准备好PHP和Java的运行环境，可参考[http://code.google.com/p/lajp/wiki/LAJP_manual LAJP帮助文档]的相关章节，或查阅PHP和JAVA的官方文档有关搭建Apache+PHP/IIS+PHP，和安装配置JSDK的相关章节。
+
+= 第三步 编写php helloworld 程序 =
+
+
+
+= 第四步 运行 =
