@@ -1,21 +1,21 @@
 @echo off
 
 rem -----------------------------------------------------------
-rem  LAJP-Java Socket Service å¯åŠ¨è„šæœ¬ 
+rem  LAJP-Java Socket Service Æô¶¯½Å±¾ 
 rem		
 rem 		(2009-09 http://code.google.com/p/lajp/)
 rem  
 rem -----------------------------------------------------------
 
-rem javaæœåŠ¡ä¸­éœ€è¦çš„jaræ–‡ä»¶æˆ–classpathè·¯å¾„ï¼Œå¦‚ä¸šåŠ¡ç¨‹åºã€ç¬¬ä¸‰æ–¹jaræ–‡ä»¶log4jç­‰
-rem export other_classpath=<some jars>;<some classpath>
+rem java·şÎñÖĞĞèÒªµÄjarÎÄ¼ş»òclasspathÂ·¾¶£¬ÈçÒµÎñ³ÌĞò¡¢µÚÈı·½jarÎÄ¼şlog4jµÈ
+rem set other_classpath=<some jars>;<some classpath>
 
-rem è‡ªåŠ¨å¯åŠ¨ç±»å’Œæ–¹æ³•ï¼ŒLAJPæœåŠ¡å¯åŠ¨æ—¶ä¼šè‡ªåŠ¨åŠ è½½å¹¶æ‰§è¡Œ
-rem export AUTORUN_CLASS=com.foo.AutoRunClass
-rem export AUTORUN_METHOD=AutoRunMethod
+rem ×Ô¶¯Æô¶¯ÀàºÍ·½·¨£¬LAJP·şÎñÆô¶¯Ê±»á×Ô¶¯¼ÓÔØ²¢Ö´ĞĞ
+rem set AUTORUN_CLASS=com.foo.AutoRunClass
+rem set AUTORUN_METHOD=AutoRunMethod
 
-rem å­—ç¬¦é›†è®¾ç½®  GBK | UTF-8
-rem export CHARSET=GBK
+rem ×Ö·û¼¯ÉèÖÃ  GBK | UTF-8
+rem set CHARSET=GBK
 
-rem LAJPæœåŠ¡å¯åŠ¨æŒ‡ä»¤
+rem LAJP·şÎñÆô¶¯Ö¸Áî
 java -classpath .;lajp-socket_9.09.jar;%other_classpath% lajpsocket.PhpJava
