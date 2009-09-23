@@ -1,5 +1,5 @@
 #labels HelloWorld程序
-= LAJP的Hello World =
+= 快速创建LAJP的Hello World程序 =
 
 == 第一步 下载 ==
 
