@@ -82,12 +82,13 @@ $name = "Ali";
 
 try
 {
-	$ret = lajp_call("hello.HelloClass::hello", $name);
-	echo "{$ret}<br>";
+  //调用Java的hello.HelloClass类中的hello方法
+  $ret = lajp_call("hello.HelloClass::hello", $name);
+  echo "{$ret}<br>";
 }
 catch (Exception $e)
 {
-	echo "Err:{$ret}<br>";
+  echo "Err:{$ret}<br>";
 }
 ?>
 }}}
