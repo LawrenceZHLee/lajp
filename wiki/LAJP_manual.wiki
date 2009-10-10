@@ -97,13 +97,13 @@ gcc lajp_MsgQ.c --share -I. -I/usr/lib/jvm/java-6-sun/include -I/usr/lib/jvm/jav
  * *消息队列配置*  
 
 对于消息队列，有三个系统配置影响其性能：
-    ＊ MSGMNI 指定系统中消息队列最大数目
-    ＊ MSGMAX 指定一个消息的最大长度
-    ＊ MSGMNB 指定在一个消息队列中最大的字节数
+    # MSGMNI 指定系统中消息队列最大数目
+    # MSGMAX 指定一个消息的最大长度
+    # MSGMNB 指定在一个消息队列中最大的字节数
 一般性的，Linux系统的默认消息队列配置非常可怜，通过查看下面三个文件获得系统配置信息：
-    ＊ /proc/sys/kernel/msgmni 缺省设置：16
-    ＊ /proc/sys/kernel/msgmax 缺省设置：8192
-    ＊ /proc/sys/kernel/msgmnb 缺省设置：16384
+    * /proc/sys/kernel/msgmni 缺省设置：16
+    * /proc/sys/kernel/msgmax 缺省设置：8192
+    * /proc/sys/kernel/msgmnb 缺省设置：16384
 为了更好的性能，通过编辑{{{/etc/sysctl.conf}}}文件，修改缺省配置：
 {{{
 # /etc/sysctl.conf
@@ -201,7 +201,7 @@ php语言规范定义了8中数据类型：boolean、int、float、string、arra
 
  * *php_array*
 
-在PHP中，array可以描述多种结构： 顺序集合(类似Java的{{{ArrayList}}}})，key-value集合(类似Java的Hashtable或{{{HashMap}}})，栈等。在LAJP中只能使用两种结构：
+在PHP中，array可以描述多种结构： 顺序集合(类似Java的{{{ArrayList}}})，key-value集合(类似Java的Hashtable或{{{HashMap}}})，栈等。在LAJP中只能使用两种结构：
  # *顺序集合* 集合元素的key类型为int类型。  
 {{{
 $a = array();
