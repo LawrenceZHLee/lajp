@@ -21,12 +21,12 @@ $ret = lajp_call("aaa.bbb.ccc.MyClass::addMethod", 10, 20);
 echo $ret;  //30
 }}}
 
-LAJP有两个核心功能：
- # 优雅地解决了PHP怎样调用Java方法间的通讯难题
- # 合理地、自动地进行PHP和Java间数据类型转换
+LAJP有两个核心能力：
+ # PHP优雅、高效地调用Java方法的能力
+ # PHP数据和Java数据合理、自动地转换的能力
 
 在LAJP的当前版本中，使用两种技术进行PHP和Java间的通信，我对它们分别命名为： *消息队列版* 和 *socket版* 。它们各自有优缺点，在使用中应根据程序所在环境特点加以选择：
- * *消息队列* 以System V的消息队列作为PHP和Java间的通信媒介，优点是理论速度快，占用资源较小；缺点是只能使用在支持System V的系统中，可以用于Unix/Linux/BSD系统，但不能用于windows。
+ * *消息队列* 以System V的消息队列作为PHP和Java间的通信媒介，优点是理论速度快，占用资源较小；缺点是只能使用在支持System V的系统中，可运用于大多数的Unix/Linux/BSD系统，但不能用于windows。
  * *socket* 以TCP/IP作为PHP和Java间的通信媒介，优点是无系统限制(所有系统都支持)；缺点是理论速度慢，占用资源较大。
 
 == LAJP运行环境要求 ==
@@ -35,11 +35,11 @@ LAJP有两个核心功能：
 
 === 消息队列版 ===
 
-运行环境需要满足System V消息队列的运行：
+环境需要满足System V消息队列的运行：
 
  * *系统* 目前常见的Unix/Linux系统都可满足php(Apache)、java的运行，其中大部分默认支持System V消息队列。
 
- * *php* php需要调用消息队列和java进程通信，按照php规范的说明,php在4.3.0版本以后支持System V消息队列。
+ * *php* php需要通过消息队列和java进程通信，按照php帮助的说明,php在4.3.0版本以后支持System V消息队列。
 
  * *apache* 无特殊要求，满足php要求即可。
 
@@ -47,9 +47,9 @@ LAJP有两个核心功能：
 
 === socket版 ===
 
- * *系统* 目前很难找到不支持tcp/ip的系统。
+ * *系统* 没有限制，很难找到不支持tcp/ip的系统。
 
- * *php* 按照php规范的说明,php版本>=4.1.0支持socket
+ * *php* 按照php帮助的说明,php版本>=4.1.0支持socket
 
  * *apache* 无特殊要求，满足php要求即可。
 
@@ -89,13 +89,29 @@ LAJP有两个核心功能：
 # -----------------------------------------------------------
 
 
-gcc lajp_MsgQ.c --share -I. -I/usr/lib/jvm/java-6-sun/include 
--I/usr/lib/jvm/java-6-sun/include/linux -o liblajpmsgq.so
+gcc lajp_MsgQ.c --share -I. -I/usr/lib/jvm/java-6-sun/include -I/usr/lib/jvm/java-6-sun/include/linux -o liblajpmsgq.so
 }}}
     # 编译 ： 执行 ./make.sh 编译
     # 部署编译好的liblajpmsgq.so库文件： 如果编译成功，会生成liblajpmsgq.so文件，将它复制到任一个"java.library.path"路径中，"java.library.path"路径可以通过java程序侦测: System.out.println(System.getProperties().getProperty("java.library.path"))
 
  * *消息队列配置*  
+
+对于消息队列，有三个系统配置影响其性能：
+    ＊ MSGMNI 指定系统中消息队列最大数目
+    ＊ MSGMAX 指定一个消息的最大长度
+    ＊ MSGMNB 指定在一个消息队列中最大的字节数
+一般性的，Linux系统的默认消息队列配置非常可怜，通过查看下面三个文件获得系统配置信息：
+    ＊ /proc/sys/kernel/msgmni 缺省设置：16
+    ＊ /proc/sys/kernel/msgmax 缺省设置：8192
+    ＊ /proc/sys/kernel/msgmnb 缺省设置：16384
+为了更好的性能，通过编辑{{{/etc/sysctl.conf}}}文件，修改缺省配置：
+{{{
+# /etc/sysctl.conf
+
+# set message queue 20M
+kernel.msgmnb = 20971520
+kernel.msgmni = 20480
+}}}
  
 === socket版 ===
 
@@ -185,7 +201,7 @@ php语言规范定义了8中数据类型：boolean、int、float、string、arra
 
  * *php_array*
 
-在PHP中，array可以描述多种结构： 顺序集合(类似Java的ArrayList)，key-value集合(类似Java的Hashtable或HashMap)，栈等。在LAJP中只能使用两种结构：
+在PHP中，array可以描述多种结构： 顺序集合(类似Java的{{{ArrayList}}}})，key-value集合(类似Java的Hashtable或{{{HashMap}}})，栈等。在LAJP中只能使用两种结构：
  # *顺序集合* 集合元素的key类型为int类型。  
 {{{
 $a = array();
@@ -207,13 +223,13 @@ $a["b"] = 20;
 $a["c"] = 30;
 }}}
 
-在PHP的array转换为Java时，LAJP内部是通过查看array的第一个元素的key，如果key是int类型，被转换为java.util.ArrayList；如果key是string类型，被转换为java.util.HashMap。
+在PHP的array转换为Java时，LAJP内部是通过查看array的第一个元素的key，如果key是int类型，被转换为{{{java.util.ArrayList}}}；如果key是string类型，被转换为{{{java.util.HashMap}}}。
 
 在PHP的array中的元素，可以是表1中的任何一种类型，包括array和Object，这意味着可以构建出复杂的结构，如数组中的数组(通常称为二维或多维数组)。
 
  * *php_object*
 
-PHP对象被映射到Jave的JavaBean对象，这意味着PHP类中的每一个属性，在Java对应类中都有一个同名，同类型(符合表1映射关系)的属性，且此属性有getter和setter方法。
+PHP对象被映射到Jave的{{{JavaBean}}}对象，这意味着PHP类中的每一个属性，在Java对应类中都有一个同名，同类型(符合表1映射关系)的属性，且此属性有getter和setter方法。
 
 目前只支持PHP4规范对象转换到Java，这是因为在LAJP内部转换时需要将PHP对象数据序列化，PHP5对象不能转换，因此在编写lajp_call函数的传参对象时需要注意书写规范。
 
@@ -526,10 +542,4 @@ Java服务方法可以抛出异常，LAJP将捕获此异常，并转换为PHP异
 
 Java中的null，将转换为PHP的NULL。
 
-== 其他 ==
 
-暂无。
-
-== 下一步计划 ==
-
-暂不公布。
