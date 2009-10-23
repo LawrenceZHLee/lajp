@@ -313,7 +313,7 @@ public class ReflectUtil
 		PropertyDescriptor[] pds = beanInfo.getPropertyDescriptors();
 		
 		StringBuilder ret = new StringBuilder();
-		ret.append(clazzName.replace('.', '_')).append("<br>\n");
+		ret.append("class ").append(clazzName.replace('.', '_')).append("<br>\n");
 		ret.append("{").append("<br>\n");
 		for (PropertyDescriptor pd : pds) 
 		{

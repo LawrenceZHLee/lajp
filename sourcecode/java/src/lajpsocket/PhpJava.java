@@ -8,14 +8,12 @@
 package lajpsocket;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Date;
-
-import lajp.MethodNotFoundException;
-import lajp.ReflectUtil;
 
 /**
  * LAJP主线程
@@ -45,6 +43,8 @@ public class PhpJava
 			System.exit(-1);
 		}
 		
+		//设置字符集
+		charset();
 		//自动程序运行
 		autoRun();
 
@@ -82,9 +82,25 @@ public class PhpJava
 	private static void charset()
 	{
 		String charset = System.getenv("CHARSET");
+		
 		if (charset != null && !charset.trim().equals(""))
 		{
+			try
+			{
+				"中文".getBytes(SingleThread.PHP_CHARSET);
+			}
+			catch (UnsupportedEncodingException e)
+			{
+				e.printStackTrace();
+				System.exit(-1);
+			}
+			
+			System.out.println("set charser: " + charset);
 			SingleThread.PHP_CHARSET = charset;
+		}
+		else
+		{
+			System.out.println("set charser: UTF-8");
 		}
 	}
 	
@@ -104,7 +120,7 @@ public class PhpJava
 			Method method = null;
 			try
 			{
-				method = ReflectUtil.matchingMethod(autoRunClassName, autoRunMethodName, null);
+				method = ReflectUtil.matchingMethod(autoRunClassName, autoRunMethodName, new Class[]{});
 			}
 			catch (ClassNotFoundException e)
 			{
