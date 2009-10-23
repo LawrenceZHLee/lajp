@@ -29,7 +29,7 @@ import java.util.Set;
 class SingleThread extends Thread
 {
 	/** PHP字符集 */
-	final static String PHP_CHARSET = "UTF-8";
+	static String PHP_CHARSET = "UTF-8";
 	/**
 	 * 合法的request消息包最小长度
 	 * 最小包格式： a:3:{i:0;i:1;i:1;i:1;i:2;s:17:"a:1:{i:0;s:0:"";}";}
@@ -466,10 +466,10 @@ class SingleThread extends Thread
 				case 0x73:		//s 字符串
 					a = sp + 2;								//"下标"长度起始
 					sp = nextIndex(args, (byte)0x3a, a); 	//"下标"长度结束":"
-					int len = Integer.parseInt(new String(args, a, sp - a)); //"下标"长度
+					int len = Integer.parseInt(new String(args, a, sp - a, PHP_CHARSET)); //"下标"长度
 					a = sp + 2;								//"下标"起始(掠过引号)
 					sp = a + len;							//"下标"结束(结束引号)
-					name = new String(args, a, sp - a);		//"下标"
+					name = new String(args, a, sp - a, PHP_CHARSET);		//"下标"
 					sp = sp + 2;							//"值"类型起始			
 					break;
 				default:
@@ -489,14 +489,14 @@ class SingleThread extends Thread
 					int a = sp + 2;							//"值"起始
 					sp = nextIndex(args, (byte)0x3b, a); 	//"值"结束";"
 					//ArgsNode对象
-					father.addChild(ArgsNode.createNode("i", name, Integer.parseInt(new String(args, a, sp - a))));
+					father.addChild(ArgsNode.createNode("i", name, Integer.parseInt(new String(args, a, sp - a, PHP_CHARSET))));
 					sp = sp + 1;							//下一个
 					continue NEXT;
 				case 0x64:		//d 浮点
 					a = sp + 2;								//"值"起始
 					sp = nextIndex(args, (byte)0x3b, a); 	//"值"结束";"
 					//ArgsNode对象
-					father.addChild(ArgsNode.createNode("d", name, Double.parseDouble(new String(args, a, sp - a))));
+					father.addChild(ArgsNode.createNode("d", name, Double.parseDouble(new String(args, a, sp - a, PHP_CHARSET))));
 					sp = sp + 1;							//下一个
 					continue NEXT;
 				case 0x62:		//b 布尔
@@ -508,11 +508,11 @@ class SingleThread extends Thread
 				case 0x73:		//s 字符串
 					a = sp + 2;								//字符串长度起始
 					sp = nextIndex(args, (byte)0x3a, a); 	//字符串长度结束":"
-					int len = Integer.parseInt(new String(args, a, sp - a)); //字符串长度
+					int len = Integer.parseInt(new String(args, a, sp - a, PHP_CHARSET)); //字符串长度
 					a = sp + 2;								//字符串起始(掠过引号)
 					
 					//ArgsNode对象
-					father.addChild(ArgsNode.createNode("s", name, new String(args, a, len)));
+					father.addChild(ArgsNode.createNode("s", name, new String(args, a, len, PHP_CHARSET)));
 					
 					sp = a + len;							//字符串结束(结束引号)
 					sp = sp + 2;							//下一个				
@@ -520,7 +520,7 @@ class SingleThread extends Thread
 				case 0x61:		//a 数组
 					a = sp + 2;								//"数组长度"起始
 					sp = nextIndex(args, (byte)0x3a, a); 	//"数组长度"结束":"
-					int arrayLen = Integer.parseInt(new String(args, a, sp -a));
+					int arrayLen = Integer.parseInt(new String(args, a, sp -a, PHP_CHARSET));
 					//ArgsNode对象(value=数组长度)
 					ArgsNode arrayNode = ArgsNode.createNode("a", name, arrayLen);
 					father.addChild(arrayNode);	
@@ -531,10 +531,10 @@ class SingleThread extends Thread
 				case 0x4f:		//O 对象
 					a = sp + 2;								//"对象类型长度"起始
 					sp = nextIndex(args, (byte)0x3a, a); 	//"对象类型长度"结束":"
-					len = Integer.parseInt(new String(args, a, sp - a)); //"对象类型长度"长度
+					len = Integer.parseInt(new String(args, a, sp - a, PHP_CHARSET)); //"对象类型长度"长度
 					a = sp + 2;								//"对象类型"起始(掠过引号)
 					//ArgsNode对象(有值：类型)
-					ArgsNode objNode = ArgsNode.createNode("O", name, new String(args, a, len));
+					ArgsNode objNode = ArgsNode.createNode("O", name, new String(args, a, len, PHP_CHARSET));
 					father.addChild(objNode);
 					a = a + len + 2;						//"对象属性长度"起始
 					sp = nextIndex(args, (byte)0x3a, a); 	//"对象属性长度"结束":"
@@ -1183,7 +1183,15 @@ class SingleThread extends Thread
 	private byte[] exceptionRsp(String exMsg)
 	{
 		//异常信息字节数组
-		byte[] ex = exMsg.getBytes();
+		byte[] ex = null;
+		try
+		{
+			ex = exMsg.getBytes(PHP_CHARSET);
+		}
+		catch (UnsupportedEncodingException e1)
+		{
+			e1.printStackTrace();
+		}
 		//异常信息长度字节数组
 		byte[] exLen = null;
 		try
@@ -1259,7 +1267,7 @@ class SingleThread extends Thread
 		ret[8] = 0x3b;	//;
 		ret[9] = 0x69;	//i
 		ret[10] = 0x3a;	//:
-		ret[11] = 0x30;	//0	 		拆分数量1
+		ret[11] = 0x31;	//0	 		拆分数量1
 		ret[12] = 0x3b;	//;
 		ret[13] = 0x69;	//i  //元素2
 		ret[14] = 0x3a;	//:
