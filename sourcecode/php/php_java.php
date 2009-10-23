@@ -5,9 +5,7 @@
 // Version: 9.09.01
 // License: http://www.apache.org/licenses/LICENSE-2.0
 //-----------------------------------------------------------
-?>
 
-<?php
 define("LAJP_IPCKEY", 0x20021230); 		//消息KEY
 define("LAJP_MSG_TYPE", 1); 			//服务端消息接收类型
 define("LAJP_MSG_MAX", 4096); 			//消息最大4k，超出需要拆分

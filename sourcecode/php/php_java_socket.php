@@ -6,9 +6,7 @@
 // Version: 9.09.01
 // License: http://www.apache.org/licenses/LICENSE-2.0
 //-----------------------------------------------------------
-?>
 
-<?php
 define("LAJP_IP", "127.0.0.1");			//Java端IP
 define("LAJP_PORT", 21230);				//Java端侦听端口
 
