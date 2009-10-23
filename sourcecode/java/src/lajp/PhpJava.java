@@ -7,6 +7,9 @@
 
 package lajp;
 
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Date;
 
 /**
@@ -17,7 +20,7 @@ import java.util.Date;
 public class PhpJava
 {
 	/** 消息队列KEY */
-	static final int IPC_KEY = 0x20021230;
+	static int IPC_KEY = 0x20021230;
 
 	/** 握手消息类型 */
 	final static int HANDSHAKE_TYPE = 1; 
@@ -47,6 +50,10 @@ public class PhpJava
 		
 		//初始化System V IPC
 		initIPC();
+		//字符集设置
+		charset();
+		//自动程序运行
+		autoRun();
 		
 		//获得消息队列id
 		msqid = MsgQ.msgget(IPC_KEY);
@@ -202,6 +209,93 @@ public class PhpJava
 		}
 
 		System.out.println("init [IPC] Semaphore OK...");
+	}
+	
+	/**
+	 * 字符集设置
+	 */
+	private static void charset()
+	{
+		String charset = System.getenv("CHARSET");
+		
+		if (charset != null && !charset.trim().equals(""))
+		{
+			try
+			{
+				"中文".getBytes(SingleThread.PHP_CHARSET);
+			}
+			catch (UnsupportedEncodingException e)
+			{
+				e.printStackTrace();
+				System.exit(-1);
+			}
+			
+			System.out.println("set charser: " + charset);
+			SingleThread.PHP_CHARSET = charset;
+		}
+		else
+		{
+			System.out.println("set charser: UTF-8");
+		}
+	}
+
+
+	/**
+	 * 自动运行的程序
+	 */
+	public static void autoRun()
+	{
+		String autoRunClassName = System.getenv("AUTORUN_CLASS");
+		String autoRunMethodName = System.getenv("AUTORUN_METHOD");
+		
+		if (autoRunClassName != null && !autoRunClassName.trim().equals("")
+				&& autoRunMethodName != null && !autoRunMethodName.trim().equals(""))
+		{
+			
+			//查找自动运行的方法
+			Method method = null;
+			try
+			{
+				method = ReflectUtil.matchingMethod(autoRunClassName, autoRunMethodName, new Class[]{});
+			}
+			catch (ClassNotFoundException e)
+			{
+				System.err.println("Can't find Class: " + autoRunClassName);
+				e.printStackTrace();
+				System.exit(-1);
+			}
+			catch (MethodNotFoundException e)
+			{
+				System.err.println("Can't find method: " + autoRunMethodName);
+				e.printStackTrace();
+				System.exit(-1);
+			}
+			
+			//调用
+			try
+			{
+				method.invoke(null, null);
+			}
+			catch (IllegalArgumentException e)
+			{
+				System.err.println("IllegalArgumentException for call method " + autoRunClassName + "." + method.getName());
+				e.printStackTrace();
+				System.exit(-1);
+			}
+			catch (IllegalAccessException e)
+			{
+				System.err.println("IllegalAccessException for call method " + autoRunClassName + "." + method.getName());
+				e.printStackTrace();
+				System.exit(-1);
+			}
+			catch (InvocationTargetException e)
+			{
+				System.err.println("InvocationTargetException for call method " + autoRunClassName + "." + method.getName());
+				e.printStackTrace();
+				System.exit(-1);
+			}
+
+		}
 	}
 
 }
