@@ -1,4 +1,3 @@
-#labels 数据交互示例
 = Example =
 
 == 文章简介 ==
@@ -699,7 +698,7 @@ a--->a:3:{i:0;i:10;i:1;i:20;i:2;i:30;}<---
 Fatal error: Uncaught exception 'Exception' with message '[LAJP Error] Response receive Java exception: MethodNotFoundException: Can't match method: aaa.bbb.ccc.MyClass4.myMethod2(java.util.ArrayList)' in /media/sda3/prog/eclipse_php/workspace/LAJP_test/php_java.php:215 Stack trace: #0 /media/sda3/prog/eclipse_php/workspace/LAJP_test/test4_03.php(11): lajp_call('aaa.bbb.ccc.MyC...', Array) #1 {main} thrown in /media/sda3/prog/eclipse_php/workspace/LAJP_test/php_java.php on line 215
 }}}
 
-集合入参类型声明必须是java.util.List或java.util.Map。这里不能声明为ArrayList是因为PHP传入参数的被视为List，而从面向对象角度理解：ArrayList继承自List，可以说ArrayList是List，而List不是ArrayList，因此这里类型不匹配。
+集合入参类型声明必须是java.util.List或java.util.Map。这里不能声明为ArrayList是因为PHP传入的参数被视为List，而从面向对象角度理解ArrayList继承自List，可以说ArrayList是List，而List不是ArrayList，因此这里类型不匹配。
 
 ----
 
@@ -715,7 +714,7 @@ public class MyClass4
 		map.put("bbb", 20);
 		map.put("ccc", 30);
 		
-		return map;
+		return map; 
 	}
 }
 }}}
