@@ -1,7 +1,7 @@
 #labels LAJP帮助文档
 = LAJP帮助文档 =
 
-JAJP是用来解决PHP和Java通讯的一项技术，在PHP中可以通过"正常"的PHP函数来调用Java的一个方法，如同下面的一个例子：
+LAJP是用来解决PHP和Java通讯的一项技术，在PHP中可以通过"正常"的PHP函数来调用Java的一个方法，如同下面的一个例子：
 
 java(service):
 {{{
@@ -541,5 +541,3 @@ Java服务方法可以抛出异常，LAJP将捕获此异常，并转换为PHP异
  * *java_null*
 
 Java中的null，将转换为PHP的NULL。
-
-
