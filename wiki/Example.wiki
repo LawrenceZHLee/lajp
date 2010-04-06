@@ -228,7 +228,7 @@ a--->i:10;<---
 Fatal error: Uncaught exception 'Exception' with message '[LAJP Error] Response receive Java exception: MethodNotFoundException: Can't match method: aaa.bbb.ccc.MyClass1.myMethod3(java.lang.Integer)' in /media/sda3/prog/eclipse_php/workspace/LAJP_test/php_java.php:215 Stack trace: #0 /media/sda3/prog/eclipse_php/workspace/LAJP_test/test1_03.php(8): lajp_call('aaa.bbb.ccc.MyC...', 10) #1 {main} thrown in /media/sda3/prog/eclipse_php/workspace/LAJP_test/php_java.php on line 215
 }}}
 
-myMethod3方法参数声明为Integer，此类也不允许。
+myMethod3方法参数声明为Integer，此种情况不被允许。
 
 所以，在LAJP中如果PHP传送int，Java方法必声明为基本类型int；传double，必声明为基本类型double；传boolean，必声明为基本类型boolean。
 
@@ -266,7 +266,7 @@ b--->O:14:"java_lang_Long":0:{}<---
 Catchable fatal error: Object of class __PHP_Incomplete_Class could not be converted to string in /media/sda3/prog/eclipse_php/workspace/LAJP_test/test1_04.php on line 11
 }}}
 
-这里myMethod4方法返回类型为long，在PHP中并没有与之对应的数据类型，但PHP端仍然接收到了
+这里myMethod4方法返回类型为long，在PHP中并没有与之对应的数据类型，但PHP端仍然接收到了:
 
 {{{
 O:14:"java_lang_Long":0:{}
@@ -284,6 +284,454 @@ O:14:"java_lang_Long":0:{}
  * 如果是java.util.Map或其子类，封装为PHP的array序列化数据，array下标为字符串；
  * 如果以上都不是，视为JavaBean，封装为PHP4的对象序列化数据。
 
-本例中，long被视为最后一种情况。
+本例中，返回类型long被视为最后一种情况。
+
+----
+
+Java:
+{{{
+package aaa.bbb.ccc;
+public class MyClass1
+{
+	public static final Integer myMethod5(int i)
+	{
+		return ++i;
+	}
+}
+}}}
+
+
+PHP:
+{{{
+$a = 10;
+echo "a---&gt;" . serialize($a) . "&lt;---<br/>";
+
+$b = lajp_call("aaa.bbb.ccc.MyClass1::myMethod5", $a);
+
+echo "b---&gt;" . serialize($b) . "&lt;---<br/>";
+echo "b---&gt;" . $b . "&lt;---<br/>";
+}}}
+
+输出:
+{{{
+a--->i:10;<---
+b--->i:11;<---
+b--->11<---
+}}}
+
+
+在LAJP中，Java方法的返回类型，当声明为int,boolean,double或它们的包装类型是等价的。我的建议是不要声明为包装类型，将来的版本很可能不再支持。
+
+----
+
+== Example 2 ==
+
+----
+
+Java:
+{{{
+package aaa.bbb.ccc;
+public class MyClass2
+{
+	public static final int myMethod1(int a, int b)
+	{
+		return a + b;
+	}
+}
+}}}
+
+
+PHP:
+{{{
+$a = 10;
+
+echo "a---&gt;" . serialize($a) . "&lt;---<br/>";
+
+$b = lajp_call("aaa.bbb.ccc.MyClass2::myMethod1", $a);
+
+echo "b---&gt;" . serialize($b) . "&lt;---<br/>";
+echo "b---&gt;" . $b . "&lt;---<br/>";
+}}}
+
+输出:
+{{{
+a--->i:10;<---
+
+Fatal error: Uncaught exception 'Exception' with message '[LAJP Error] Response receive Java exception: MethodNotFoundException: Can't match method: aaa.bbb.ccc.MyClass2.myMethod1(1 parameters)' in /media/sda3/prog/eclipse_php/workspace/LAJP_test/php_java.php:215 Stack trace: #0 /media/sda3/prog/eclipse_php/workspace/LAJP_test/test2_01.php(8): lajp_call('aaa.bbb.ccc.MyC...', 10) #1 {main} thrown in /media/sda3/prog/eclipse_php/workspace/LAJP_test/php_java.php on line 215
+}}}
+
+
+在PHP语言中，方法参数是可变长的，但在LAJP中，不允许。
+
+----
+
+Java:
+{{{
+package aaa.bbb.ccc;
+public class MyClass2
+{
+	public static final String myMethod3(boolean a)
+	{
+		if (a)
+		{
+			return "input TRUE";
+		}
+		else
+		{
+			return "input FALSE";
+		}
+	}
+	//同名方法
+	public static final String myMethod3(boolean a, int b)
+	{
+		if (a)
+		{
+			return "input TRUE, " + b;
+		}
+		else
+		{
+			return "input FALSE, " + b;
+		}
+	}
+}
+}}}
+
+
+PHP:
+{{{
+$a = TRUE;
+
+echo "a---&gt;" . serialize($a) . "&lt;---<br/>";
+
+$b = lajp_call("aaa.bbb.ccc.MyClass2::myMethod3", $a);
+
+echo "b---&gt;" . serialize($b) . "&lt;---<br/>";
+echo "b---&gt;" . $b . "&lt;---<br/>";
+}}}
+
+输出:
+{{{
+a--->b:1;<---
+b--->s:10:"input TRUE";<---
+b--->input TRUE<---
+}}}
+
+Java的方法重载(overload)，允许。下面是另一个例子（同名，参数数量也相同）:
+
+Java:
+{{{
+package aaa.bbb.ccc;
+public class MyClass2
+{
+	public static final String myMethod4(boolean a)
+	{
+		if (a)
+		{
+			return "input TRUE";
+		}
+		else
+		{
+			return "input FALSE";
+		}
+	}
+
+	public static final String myMethod4(int a)
+	{
+			return "input " + a;
+	}
+}
+}}}
+
+
+PHP:
+{{{
+$a = TRUE;
+
+echo "a---&gt;" . serialize($a) . "&lt;---<br/>";
+
+$b = lajp_call("aaa.bbb.ccc.MyClass2::myMethod4", 10);
+
+echo "b---&gt;" . serialize($b) . "&lt;---<br/>";
+echo "b---&gt;" . $b . "&lt;---<br/>";
+}}}
+
+输出:
+{{{
+a--->b:1;<---
+b--->s:8:"input 10";<---
+b--->input 10<---
+}}}
+
+----
+
+== Example 3 空和异常 ==
+
+----
+
+Java:
+{{{
+package aaa.bbb.ccc;
+public class MyClass3
+{
+	public static final int myMethod1(int a, int b)
+	{
+		return a / b;
+	}
+}
+}}}
+
+
+PHP:
+{{{
+$a = 10;
+$b = 0;
+
+echo "a---&gt;" . serialize($a) . "&lt;---<br/>";
+
+$ret = lajp_call("aaa.bbb.ccc.MyClass3::myMethod1", $a, $b);
+
+echo "ret---&gt;" . serialize($ret) . "&lt;---<br/>";
+echo "ret---&gt;" . $ret . "&lt;---<br/>";
+}}}
+
+输出:
+{{{
+a--->i:10;<---
+
+Fatal error: Uncaught exception 'Exception' with message '[LAJP Error] Response receive Java exception: InvocationTargetException for call method aaa.bbb.ccc.MyClass3.myMethod1' in /media/sda3/prog/eclipse_php/workspace/LAJP_test/php_java.php:215 Stack trace: #0 /media/sda3/prog/eclipse_php/workspace/LAJP_test/test3_01.php(9): lajp_call('aaa.bbb.ccc.MyC...', 10, 0) #1 {main} thrown in /media/sda3/prog/eclipse_php/workspace/LAJP_test/php_java.php on line 215
+}}}
+
+这是Java端除0异常的例子。Java方法抛出的异常，如果是Exception或其子类，都可以“抛”给PHP端。
+
+----
+
+Java:
+{{{
+package aaa.bbb.ccc;
+public class MyClass3
+{
+	public static final String myMethod2()
+	{
+		return null;
+	}
+}
+}}}
+
+
+PHP:
+{{{
+$ret = lajp_call("aaa.bbb.ccc.MyClass3::myMethod2");
+
+echo "ret---&gt;" . serialize($ret) . "&lt;---<br/>";
+echo "ret---&gt;" . ($ret == NULL) . "&lt;---<br/>";
+}}}
+
+输出:
+{{{
+ret--->N;<---
+ret--->1<---
+}}}
+
+这是Java端返回null的例子。
+
+Java:
+{{{
+package aaa.bbb.ccc;
+public class MyClass3
+{
+	public static final void myMethod3()
+	{
+		
+	}
+}
+}}}
+
+
+PHP:
+{{{
+$ret = lajp_call("aaa.bbb.ccc.MyClass3::myMethod3");
+
+echo "ret---&gt;" . serialize($ret) . "&lt;---<br/>";
+echo "ret---&gt;" . ($ret == NULL ? "NULL" : $ret) . "&lt;---<br/>";
+}}}
+
+输出:
+{{{
+ret--->N;<---
+ret--->NULL<---
+}}}
+
+这是Java端返回void的例子。
+
+在LAJP的9.10版本中，null和void返回类型在PHP端被解释为FALSE，新版将改正。
+
+----
+
+== Example 4 集合 ==
+
+Java:
+{{{
+package aaa.bbb.ccc;
+public class MyClass4
+{
+	//方法参数声明为List
+	public static final void myMethod1(java.util.List list)
+	{
+		if (list == null)
+		{
+			System.out.println("list集合为空");
+			return;
+		}
+		
+		System.out.println("list集合长度: " + list.size());
+		for (int i = 0; i < list.size(); i++)
+		{
+			System.out.printf("----list[%d]:%s\n", i, (String)list.get(i));
+		}
+	}
+	//方法参数声明为Map
+	public static final void myMethod1(java.util.Map<String, String> map)
+	{
+		if (map == null)
+		{
+			System.out.println("map集合为空");
+			return;
+		}
+		
+		System.out.println("map集合长度: " + map.size());
+		
+		java.util.Set<String> keySet = map.keySet();
+		for (String key : keySet)
+		{
+			System.out.printf("----map[%s=>%s]\n", key, (String)map.get(key));
+		}
+	}
+}
+}}}
+
+
+PHP:
+{{{
+$a = array(); //定义一个数组
+$a[0] = "aaa";//第一个元素"aaa"
+$a[1] = "bbb";//第二个元素"bbb"
+$a[2] = "ccc";//第三个元素"ccc"
+
+echo "a---&gt;" . serialize($a) . "&lt;---<br/>";
+
+lajp_call("aaa.bbb.ccc.MyClass4::myMethod1", $a);
+}}}
+
+PHP输出:
+{{{
+a--->a:3:{i:0;s:3:"aaa";i:1;s:3:"bbb";i:2;s:3:"ccc";}<---
+}}}
+
+Java输出:
+{{{
+list集合长度: 3
+----list[0]:aaa
+----list[1]:bbb
+----list[2]:ccc
+}}}
+
+在PHP中，array可以模拟多种数据类型，如队列、哈西、栈等，对应到Java，有一下规定：
+ * 如果array的第一个元素的KEY是int类型，对应为Java的java.util.List
+ * 如果array的第一个元素的KEY是string类型，对应到Java的java.util.Map
+上面的例子中，$a[0] = "aaa"; 第一个元素KEY是整形，因此调用的是myMethod1(java.util.List list)方法。下面将PHP代码稍加改动：
+
+{{{
+$a["a"] = "aaa";//第一个元素"aaa"
+$a["b"] = "bbb";//第二个元素"bbb"
+$a["c"] = "ccc";//第三个元素"ccc"
+}}}
+
+array的KEY数据类型被改动为字符串，再来看Java端的输出：
+
+{{{
+map集合长度: 3
+----map[b=>bbb]
+----map[c=>ccc]
+----map[a=>aaa]
+}}}
+
+myMethod1(java.util.Map<String, String> map)方法使用了泛型，在Java中运行态是去泛型化的，因此对于LAJP，泛型无作用。但我建议仍然多用泛型，至少在代码review中清晰很多。
+
+----
+
+Java:
+{{{
+package aaa.bbb.ccc;
+public class MyClass4
+{
+	public static final void myMethod2(java.util.ArrayList list)
+	{
+		if (list == null)
+		{
+			System.out.println("list集合为空");
+			return;
+		}
+		
+		System.out.println("list集合长度: " + list.size());
+		for (int i = 0; i < list.size(); i++)
+		{
+			System.out.printf("----list[%d]:%s\n", i, (String)list.get(i));
+		}
+	}
+}
+}}}
+
+PHP:
+{{{
+$a = array();
+$a[] = 10;
+$a[] = 20;
+$a[] = 30;
+
+echo "a---&gt;" . serialize($a) . "&lt;---<br/>";
+
+lajp_call("aaa.bbb.ccc.MyClass4::myMethod2", $a);
+}}}
+
+PHP输出:
+{{{
+a--->a:3:{i:0;i:10;i:1;i:20;i:2;i:30;}<---
+
+Fatal error: Uncaught exception 'Exception' with message '[LAJP Error] Response receive Java exception: MethodNotFoundException: Can't match method: aaa.bbb.ccc.MyClass4.myMethod2(java.util.ArrayList)' in /media/sda3/prog/eclipse_php/workspace/LAJP_test/php_java.php:215 Stack trace: #0 /media/sda3/prog/eclipse_php/workspace/LAJP_test/test4_03.php(11): lajp_call('aaa.bbb.ccc.MyC...', Array) #1 {main} thrown in /media/sda3/prog/eclipse_php/workspace/LAJP_test/php_java.php on line 215
+}}}
+
+集合入参类型声明必须是java.util.List或java.util.Map。这里不能声明为ArrayList是因为PHP传入参数的被视为List，而从面向对象角度理解：ArrayList继承自List，可以说ArrayList是List，而List不是ArrayList，因此这里类型不匹配。
+
+----
+
+Java:
+{{{
+package aaa.bbb.ccc;
+public class MyClass4
+{
+	public static final java.util.HashMap<String, Integer> myMethod4()
+	{
+		java.util.HashMap map = new java.util.HashMap();
+		map.put("aaa", 10);
+		map.put("bbb", 20);
+		map.put("ccc", 30);
+		
+		return map;
+	}
+}
+}}}
+
+PHP:
+{{{
+$ret = lajp_call("aaa.bbb.ccc.MyClass4::myMethod4");
+echo "ret---&gt;" . serialize($ret) . "&lt;---<br/>";
+}}}
+
+PHP输出:
+{{{
+ret--->a:3:{s:3:"aaa";i:10;s:3:"ccc";i:30;s:3:"bbb";i:20;}<---
+}}}
+
+这里返回类型声明为java.util.Map的子类形是可以的。从面向对象角度理解：HashMap即是Map。
 
 ----
