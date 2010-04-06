@@ -228,9 +228,7 @@ a--->i:10;<---
 Fatal error: Uncaught exception 'Exception' with message '[LAJP Error] Response receive Java exception: MethodNotFoundException: Can't match method: aaa.bbb.ccc.MyClass1.myMethod3(java.lang.Integer)' in /media/sda3/prog/eclipse_php/workspace/LAJP_test/php_java.php:215 Stack trace: #0 /media/sda3/prog/eclipse_php/workspace/LAJP_test/test1_03.php(8): lajp_call('aaa.bbb.ccc.MyC...', 10) #1 {main} thrown in /media/sda3/prog/eclipse_php/workspace/LAJP_test/php_java.php on line 215
 }}}
 
-myMethod3方法参数声明为Integer，此种情况不被允许。
-
-所以，在LAJP中如果PHP传送int，Java方法必声明为基本类型int；传double，必声明为基本类型double；传boolean，必声明为基本类型boolean。
+myMethod3方法参数声明为Integer，在Java语言中有装箱、拆箱，int和Integer通常可互换，但在LAJP中此种情况不被允许。所以，如果PHP传送int，Java方法必声明为基本类型int；传double，必声明为基本类型double；传boolean，必声明为基本类型boolean。
 
 ----
 
@@ -635,10 +633,10 @@ list集合长度: 3
 ----list[2]:ccc
 }}}
 
-在PHP中，array可以模拟多种数据类型，如队列、哈西、栈等，对应到Java，有一下规定：
+在PHP中，array可以模拟多种数据类型，如队列、哈西、栈等，对应到Java，有以下规定：
  * 如果array的第一个元素的KEY是int类型，对应为Java的java.util.List
  * 如果array的第一个元素的KEY是string类型，对应到Java的java.util.Map
-上面的例子中，$a[0] = "aaa"; 第一个元素KEY是整形，因此调用的是myMethod1(java.util.List list)方法。下面将PHP代码稍加改动：
+上面的例子中，{{{$a[0] = "aaa";}}} 第一个元素KEY是整形，因此调用的是myMethod1(java.util.List list)方法。下面将PHP代码稍加改动：
 
 {{{
 $a["a"] = "aaa";//第一个元素"aaa"
