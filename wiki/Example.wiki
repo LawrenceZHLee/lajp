@@ -24,7 +24,9 @@ echo serialize($a);
 
 输出：
 
-{{{i:10;}}}
+{{{
+i:10;
+}}}
 
 i表示int类型，10是其值。
 
@@ -37,7 +39,9 @@ echo serialize($a);
 
 输出：
 
-{{{s:4:"abcd";}}}
+{{{
+s:4:"abcd";
+}}}
 
 s表示string类型，4表示长度，"abcd"是其值。
 
@@ -50,7 +54,9 @@ echo serialize($a);
 
 输出：
 
-{{{b:1;}}}
+{{{
+b:1;
+}}}
 
 b表示boolean类型，1表示TRUE，0表示FALSE。
 
@@ -63,7 +69,9 @@ echo serialize($a);
 
 输出：
 
-{{{d:10.2400000000000002131628207280300557613372802734375;}}}
+{{{
+d:10.2400000000000002131628207280300557613372802734375;
+}}}
 
 d表示double类型，10.2400000000000002131628207280300557613372802734375是其值。
 
@@ -87,9 +95,9 @@ a:3:{i:0;i:20;i:1;s:5:"abcde";i:2;b:1;}
 }}}
 
 开始的a表示array，紧跟着的3表示数组长度，{}内部是数组元素：
-{{{i:0;i:20;}}}是第一个元素，i:0;是KEY（表示下标是int类型的0），i:20;是VALUE。
-{{{i:1;s:5:"abcde";}}}是第二个元素，i:1;是KEY（表示下标是int类型的1），s:5:"abcde";是VALUE。
-{{{i:2;b:1;}}}是第三个元素，i:2;是KEY（表示下标是int类型的2），b:1;是VALUE。
+ * {{{i:0;i:20;}}}是第一个元素，i:0;是KEY（表示下标是int类型的0），i:20;是VALUE。
+ * {{{i:1;s:5:"abcde";}}}是第二个元素，i:1;是KEY（表示下标是int类型的1），s:5:"abcde";是VALUE。
+ * {{{i:2;b:1;}}}是第三个元素，i:2;是KEY（表示下标是int类型的2），b:1;是VALUE。
 
 {{{
 $a = array();
@@ -108,10 +116,85 @@ a:3:{s:1:"a";i:20;s:1:"b";s:5:"abcde";s:1:"c";b:1;}
 
 这里数组下标是字符串，数据结构可以看作是其他语言的Hashtable类型。
 
+----
+
 在LAJP中，PHP和Java之间传输的数据封装形式，即是上面这种PHP序列化数据形式。
 
 
 == Example 1 ==
 
+----
+
+Java:
+{{{
+package aaa.bbb.ccc;
+public class MyClass1
+{
+	public static final int myMethod1(int i)
+	{
+		return ++i;
+	}
+}
+}}}
+
+
+PHP:
+{{{
+$a = 10;
+echo "a---&gt;" . serialize($a) . "&lt;---<br/>";
+
+$b = lajp_call("aaa.bbb.ccc.MyClass1::myMethod1", $a);
+
+echo "b---&gt;" . serialize($b) . "&lt;---<br/>";
+echo "b---&gt;" . $b . "&lt;---<br/>";
+}}}
+
+输出:
+{{{
+a--->i:10;<---
+b--->i:11;<---
+b--->11<---
+}}}
+
+在LAJP中，当PHP将整形10传给Java服务时，传送的数据即是字符串{{{i:10;}}}，Java服务返回整形11也包装为字符串{{{i:11;}}}。
+
+----
+
+Java:
+{{{
+package aaa.bbb.ccc;
+public class MyClass1
+{
+	public static final int myMethod2(long i)
+	{
+		return (int)++i;
+	}
+}
+}}}
+
+
+PHP:
+{{{
+$a = 10;
+echo "a---&gt;" . serialize($a) . "&lt;---<br/>";
+
+$b = lajp_call("aaa.bbb.ccc.MyClass1::myMethod2", $a);
+
+echo "b---&gt;" . serialize($b) . "&lt;---<br/>";
+echo "b---&gt;" . $b . "&lt;---<br/>";
+}}}
+
+输出:
+{{{
+a--->i:10;<---
+
+Fatal error: Uncaught exception 'Exception' with message '[LAJP Error] Response receive Java exception: MethodNotFoundException: Can't match method: aaa.bbb.ccc.MyClass1.myMethod2(long)' in /media/sda3/prog/eclipse_php/workspace/LAJP_test/php_java.php:215 Stack trace: #0 /media/sda3/prog/eclipse_php/workspace/LAJP_test/test1_02.php(8): lajp_call('aaa.bbb.ccc.MyC...', 10) #1 {main} thrown in /media/sda3/prog/eclipse_php/workspace/LAJP_test/php_java.php on line 215
+}}}
+
+myMethod2方法参数声明为long，在PHP中没有与之对应的数据类型，因此抛出异常。
+
+_也有朋友认为应该允许这种情况，因为在Java中int可以自动转换为long；我的意见还是不允许，因为有带来二义性的可能。_
+
+----
 
 
