@@ -197,4 +197,93 @@ _也有朋友认为应该允许这种情况，因为在Java中int可以自动转
 
 ----
 
+Java:
+{{{
+package aaa.bbb.ccc;
+public class MyClass1
+{
+	public static final int myMethod3(Integer i)
+	{
+		return (int)++i;
+	}
+}
+}}}
 
+
+PHP:
+{{{
+$a = 10;
+echo "a---&gt;" . serialize($a) . "&lt;---<br/>";
+
+$b = lajp_call("aaa.bbb.ccc.MyClass1::myMethod3", $a);
+
+echo "b---&gt;" . serialize($b) . "&lt;---<br/>";
+echo "b---&gt;" . $b . "&lt;---<br/>";
+}}}
+
+输出:
+{{{
+a--->i:10;<---
+
+Fatal error: Uncaught exception 'Exception' with message '[LAJP Error] Response receive Java exception: MethodNotFoundException: Can't match method: aaa.bbb.ccc.MyClass1.myMethod3(java.lang.Integer)' in /media/sda3/prog/eclipse_php/workspace/LAJP_test/php_java.php:215 Stack trace: #0 /media/sda3/prog/eclipse_php/workspace/LAJP_test/test1_03.php(8): lajp_call('aaa.bbb.ccc.MyC...', 10) #1 {main} thrown in /media/sda3/prog/eclipse_php/workspace/LAJP_test/php_java.php on line 215
+}}}
+
+myMethod3方法参数声明为Integer，此类也不允许。
+
+所以，在LAJP中如果PHP传送int，Java方法必声明为基本类型int；传double，必声明为基本类型double；传boolean，必声明为基本类型boolean。
+
+----
+
+Java:
+{{{
+package aaa.bbb.ccc;
+public class MyClass1
+{
+	public static final long myMethod4(int i)
+	{
+		return ++i;
+	}
+}
+}}}
+
+
+PHP:
+{{{
+$a = 10;
+echo "a---&gt;" . serialize($a) . "&lt;---<br/>";
+
+$b = lajp_call("aaa.bbb.ccc.MyClass1::myMethod4", $a);
+
+echo "b---&gt;" . serialize($b) . "&lt;---<br/>";
+echo "b---&gt;" . $b . "&lt;---<br/>";
+}}}
+
+输出:
+{{{
+a--->i:10;<---
+b--->O:14:"java_lang_Long":0:{}<---
+
+Catchable fatal error: Object of class __PHP_Incomplete_Class could not be converted to string in /media/sda3/prog/eclipse_php/workspace/LAJP_test/test1_04.php on line 11
+}}}
+
+这里myMethod4方法返回类型为long，在PHP中并没有与之对应的数据类型，但PHP端仍然接收到了
+
+{{{
+O:14:"java_lang_Long":0:{}
+}}}
+
+其中起始的"O"表示这是一个对象。
+
+在Java端，LAJP是这样来转换返回数据的：
+
+ * 如果方法返回类型是int或包装类Integer，封装为PHP的int序列化数据；
+ * 如果是double包装类Integer，封装为PHP的float序列化数据；
+ * 如果是boolean包装类Boolean，封装为PHP的boolean序列化数据；
+ * 如果是java.lang.String，封装为PHP的String序列化数据；
+ * 如果是java.util.List或其子类，封装为PHP的array序列化数据，array下标为递增整数；
+ * 如果是java.util.Map或其子类，封装为PHP的array序列化数据，array下标为字符串；
+ * 如果以上都不是，视为JavaBean，封装为PHP4的对象序列化数据。
+
+本例中，long被视为最后一种情况。
+
+----
