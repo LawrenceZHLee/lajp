@@ -1,5 +1,5 @@
 #labels 数据类型示例
-= Example =
+= Example 数据类型示例 =
 
 == 文章简介 ==
 
