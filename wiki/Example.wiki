@@ -734,3 +734,148 @@ ret--->a:3:{s:3:"aaa";i:10;s:3:"ccc";i:30;s:3:"bbb";i:20;}<---
 这里返回类型声明为java.util.Map的子类形是可以的。从面向对象角度理解：HashMap即是Map。
 
 ----
+
+== Example 5 对象 ==
+
+Java:
+{{{
+package aaa.bbb.ccc;
+//JavaBean
+public class MyBean
+{
+	private int i;
+	private boolean b;
+	private String c;
+	private java.util.List<Double> list;
+	
+	public int getI()
+	{
+		return i;
+	}
+	public void setI(int i)
+	{
+		this.i = i;
+	}
+	public boolean isB()
+	{
+		return b;
+	}
+	public void setB(boolean b)
+	{
+		this.b = b;
+	}
+	public String getC()
+	{
+		return c;
+	}
+	public void setC(String c)
+	{
+		this.c = c;
+	}
+	public java.util.List<Double> getList()
+	{
+		return list;
+	}
+	public void setList(java.util.List<Double> list)
+	{
+		this.list = list;
+	}
+}
+}}}
+
+{{{
+package aaa.bbb.ccc;
+public class MyClass5
+{
+	public static final MyBean myMethod1(MyBean bean)
+	{
+		if (bean == null)
+		{
+			return null;
+		}
+		
+		bean.setI(bean.getI() + 1);
+		bean.setB(!bean.isB());
+		bean.setC(bean.getC() + " OK!");
+		
+		java.util.ArrayList<Double> retList = new java.util.ArrayList<Double>();
+		for (double d : bean.getList())
+		{
+			retList.add(d + 1);
+		}
+		bean.setList(retList);
+		
+		return bean;
+	}
+}
+}}}
+
+
+PHP:
+{{{
+class aaa_bbb_ccc_MyBean
+{
+	var $i;
+	var $b;
+	var $c;
+	var $list;
+}
+
+$a = new aaa_bbb_ccc_MyBean; //实例化对象
+$a->i = 10;
+$a->b = TRUE;
+$a->c = "zhangsan";
+$a->list = array();
+$a->list[] = 10.2;
+$a->list[] = 20.4;
+
+echo "a---&gt;" . serialize($a) . "&lt;---<br/>";
+
+$ret = lajp_call("aaa.bbb.ccc.MyClass5::myMethod1", $a);
+echo "ret---&gt;" . serialize($ret) . "&lt;---<br/>";
+}}}
+
+PHP输出:
+{{{
+a--->O:18:"aaa_bbb_ccc_MyBean":4:{s:1:"i";i:10;s:1:"b";b:1;s:1:"c";s:8:"zhangsan";s:4:"list";a:2:{i:0;d:10.199999999999999289457264239899814128875732421875;i:1;d:20.39999999999999857891452847979962825775146484375;}}<---
+ret--->O:18:"aaa_bbb_ccc_MyBean":4:{s:1:"i";i:11;s:1:"b";b:0;s:1:"c";s:12:"zhangsan OK!";s:4:"list";a:2:{i:0;d:11.199999999999999289457264239899814128875732421875;i:1;d:21.39999999999999857891452847979962825775146484375;}}<---
+}}}
+
+在LAJP中，对象传输有下面的规则：
+ * Java端，对象必须符合JavaBean规则
+ * PHP端，必须是PHP4对象（PHP5对象序列化数据不完备，目前不支持）
+ * Java和PHP对象映射，属性名称一致（有过Struts编程经历的人很容易理解这点）
+
+LAJP中提供了一个生成PHP4对象的工具，比如可以通过Java的aaa.bbb.ccc.MyBean类，来生成与之对应的PHP类代码：
+
+php:
+{{{
+$ret = lajp_call("lajp.ReflectUtil::javaBean2Php", "aaa.bbb.ccc.MyBean");
+echo $ret;
+}}}
+
+PHP输出:
+{{{
+class aaa_bbb_ccc_MyBean
+{
+    var $b;
+    var $c;
+    var $i;
+    var $list;
+}
+}}}
+
+----
+
+对象、数组（Java映射为Map和List）属于容器型变量数据，对象内部的属性、数组内部的元素，其数据类型必须是以下几种：
+ * int
+ * boolean
+ * php(float或double) | Java(double)
+ * php(string) | Java(java.lang.String)
+ * php4对象 | Java(JavaBean)
+ * array | java.util.Map或java.util.List
+以上6中数据类型，也就是LAJP所能支持的可以传输的数据类型。
+
+----
+
+
