@@ -276,11 +276,11 @@ O:14:"java_lang_Long":0:{}
 在Java端，LAJP是这样来转换返回数据的：
 
  * 如果方法返回类型是int或包装类Integer，封装为PHP的int序列化数据；
- * 如果是double包装类Integer，封装为PHP的float序列化数据；
- * 如果是boolean包装类Boolean，封装为PHP的boolean序列化数据；
- * 如果是java.lang.String，封装为PHP的String序列化数据；
- * 如果是java.util.List或其子类，封装为PHP的array序列化数据，array下标为递增整数；
- * 如果是java.util.Map或其子类，封装为PHP的array序列化数据，array下标为字符串；
+ * 如果返回是double或包装类Double，封装为PHP的float序列化数据；
+ * 如果返回是boolean或包装类Boolean，封装为PHP的boolean序列化数据；
+ * 如果返回是java.lang.String，封装为PHP的String序列化数据；
+ * 如果返回是java.util.List或其子类，封装为PHP的array序列化数据，array下标为递增整数；
+ * 如果返回是java.util.Map或其子类，封装为PHP的array序列化数据，array下标为字符串；
  * 如果以上都不是，视为JavaBean，封装为PHP4的对象序列化数据。
 
 本例中，返回类型long被视为最后一种情况。
