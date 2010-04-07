@@ -851,6 +851,7 @@ LAJP中提供了一个生成PHP4对象的工具，比如可以通过Java的aaa.b
 php:
 {{{
 $ret = lajp_call("lajp.ReflectUtil::javaBean2Php", "aaa.bbb.ccc.MyBean");
+//$ret = lajp_call("lajpsocket.ReflectUtil::javaBean2Php", "aaa.bbb.ccc.MyBean"); //LAJP的socket版本用这一行
 echo $ret;
 }}}
 
