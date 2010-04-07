@@ -846,7 +846,7 @@ ret--->O:18:"aaa_bbb_ccc_MyBean":4:{s:1:"i";i:11;s:1:"b";b:0;s:1:"c";s:12:"zhang
  * PHP端，必须是PHP4对象（PHP5对象序列化数据不完备，目前不支持）
  * Java和PHP对象映射，属性名称一致（有过Struts编程经历的人很容易理解这点）
 
-LAJP中提供了一个生成PHP4对象的工具，比如可以通过Java的aaa.bbb.ccc.MyBean类，来生成与之对应的PHP类代码：
+LAJP中提供了一个自动生成PHP4对象类的工具，比如可以通过Java的aaa.bbb.ccc.MyBean类，来生成与之对应的PHP4对象类代码：
 
 php:
 {{{
