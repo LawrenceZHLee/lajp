@@ -844,6 +844,7 @@ class SingleThread extends Thread
 		//名--------------------
 		if (name != null)
 		{
+			//List
 			if (name instanceof Integer)
 			{
 				//数组下标
@@ -860,6 +861,7 @@ class SingleThread extends Thread
 					e.printStackTrace();
 				}
 			}
+			//Map
 			else if (name instanceof String)
 			{
 				//数组key
@@ -1255,7 +1257,7 @@ class SingleThread extends Thread
 	private byte[] voidResponse()
 	{
 		//初始化异常消息
-		byte[] ret = new byte[33];
+		byte[] ret = new byte[28];
 		ret[0] = 0x61;	//a
 		ret[1] = 0x3a;	//:
 		ret[2] = 0x33;	//3
@@ -1281,14 +1283,9 @@ class SingleThread extends Thread
 		ret[22] = 0x3a;	//:
 		ret[23] = 0x32;	//2
 		ret[24] = 0x3b;	//;
-		ret[25] = 0x73;	//s
-		ret[26] = 0x3a;	//:
-		ret[27] = 0x30;	//0
-		ret[28] = 0x3a;	//:
-		ret[29] = 0x22;	//"
-		ret[30] = 0x22;	//"
-		ret[31] = 0x3b;	//;
-		ret[32] = 0x7d;	//}
+		ret[25] = 0x4e;	//N  //NULL
+		ret[26] = 0x3b;	//;
+		ret[27] = 0x7d;	//}
 		
 		return ret;
 	}
