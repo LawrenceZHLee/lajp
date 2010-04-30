@@ -1,7 +1,6 @@
 //-----------------------------------------------------------
 // LAJP-java(socket) (2009-09 http://code.google.com/p/lajp/)
 // 
-// Version: 9.09.01
 // License: http://www.apache.org/licenses/LICENSE-2.0
 //-----------------------------------------------------------
 
@@ -30,6 +29,9 @@ public class PhpJava
 
 	public PhpJava()
 	{
+		//设置侦听端口
+		setListenPort();
+		
 		try
 		{
 			//侦听
@@ -47,8 +49,7 @@ public class PhpJava
 		charset();
 		//自动程序运行
 		autoRun();
-
-		
+	
 		while(true)
 		{
 			try
@@ -74,6 +75,31 @@ public class PhpJava
 		System.out.println("-------------------------------------------");
 
 		PhpJava server = new PhpJava();
+	}
+	
+	/**
+	 * 设置侦听端口
+	 */
+	private static void setListenPort()
+	{
+		String s_port = System.getenv("SERVICE_PORT");
+		
+		if (s_port != null && !s_port.trim().equals(""))
+		{
+			try
+			{
+				port = Integer.parseInt(s_port);
+			}
+			catch (NumberFormatException e)
+			{
+				e.printStackTrace();
+				System.exit(-1);
+			}
+		}
+		else
+		{
+			//default 21230 
+		}
 	}
 	
 	/**
