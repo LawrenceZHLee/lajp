@@ -43,8 +43,8 @@ public class PhpJava
 	public static void main(String[] args)
 	{
 		System.out.println("-------------------------------------------");
-		System.out.println("- Start LAJP-JAVA...            ");
-		System.out.println("- time:" + new Date());
+		System.out.println("- LAJP-JAVA (Message Queue) Service");
+		System.out.println("- Time: " + new Date());
 		System.out.println("-------------------------------------------");
 		
 		//初始化System V IPC
@@ -61,7 +61,7 @@ public class PhpJava
 		//接收信息长度
 		int bufLen = 1024;
 		
-		System.out.println("Start LAJP-JAVA OK...");
+		System.out.println("Server startup...");
 
 		while (true)
 		{

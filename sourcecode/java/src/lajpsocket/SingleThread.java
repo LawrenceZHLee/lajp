@@ -86,7 +86,7 @@ class SingleThread extends Thread
 		//---------------------------------------------------
 		//	1.接收消息
 		//---------------------------------------------------
-		byte[] reqLenBuff = new byte[64];	
+		//byte[] reqLenBuff = new byte[64];	
 		
 		try
 		{
