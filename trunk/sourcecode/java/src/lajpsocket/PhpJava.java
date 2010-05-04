@@ -50,6 +50,8 @@ public class PhpJava
 		//自动程序运行
 		autoRun();
 	
+		System.out.println("Server startup...");
+
 		while(true)
 		{
 			try
@@ -70,11 +72,11 @@ public class PhpJava
 	public static void main(String[] args)
 	{
 		System.out.println("-------------------------------------------");
-		System.out.println("- Start LAJP-JAVA(socket)...            ");
-		System.out.println("- time:" + new Date());
+		System.out.println("- LAJP-JAVA (Socket) Service");
+		System.out.println("- Time: " + new Date());
 		System.out.println("-------------------------------------------");
 
-		PhpJava server = new PhpJava();
+		new PhpJava();
 	}
 	
 	/**
