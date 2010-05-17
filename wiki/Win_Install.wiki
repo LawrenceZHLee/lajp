@@ -1,6 +1,6 @@
-#labels 图解LAJP在Windows系统上的安装帮助
+#labels 图解LAJP在Windows系统上的安装配置
 
-= LAJP在Windows系统上的安装帮助 =
+= 图解LAJP在Windows系统上的安装配置 =
 
 在Windows系统上运行PHP有多种选择，这里描述的是比较流行的Apapche+PHP方式。
 
@@ -22,7 +22,7 @@ Next：
 
 http://lajp.googlecode.com/svn/wiki/images/apache_install_04.png
 
-输入域名，如果是开发机器随便起名，NEXT：
+输入域名，如果是开发机器随便起名，Next：
 
 http://lajp.googlecode.com/svn/wiki/images/apache_install_05.png
 
@@ -50,7 +50,7 @@ http://lajp.googlecode.com/svn/wiki/images/apache_install_10.png
 
 http://lajp.googlecode.com/svn/wiki/images/apache_install_11.png
 
-=== 一、安装PHP ===
+=== 二、安装PHP ===
 
 从PHP网站下载PHP安装程序，直接运行：
 
@@ -96,12 +96,44 @@ http://lajp.googlecode.com/svn/wiki/images/php_install_11.png
 
 写一个PHP文件，进行测试。在Apache安装目录下的htdocs目录中创建一个文件“test.php”：
 
-{{{<?php
+{{{
+<?php
 phpinfo();
-?>}}}
+?>
+}}}
 
 打开浏览器，地址栏输入 http://127.0.0.1/test.php，输出页面如下：
 
 http://lajp.googlecode.com/svn/wiki/images/php_install_12.png
 
 观察phpinfo中Sockets support，如果是enabled，PHP安装顺利。
+
+=== 安装Java环境 ===
+
+去Java网站，下载Java虚拟机：
+
+http://lajp.googlecode.com/svn/wiki/images/java_install_01.png 
+
+根据自己的机器和操作系统，选择适合的Java虚拟机：
+
+http://lajp.googlecode.com/svn/wiki/images/java_install_02.png 
+
+运行安装程序：
+
+http://lajp.googlecode.com/svn/wiki/images/java_install_03.png 
+
+安装：
+
+http://lajp.googlecode.com/svn/wiki/images/java_install_04.png 
+
+针对Windows的安全警告，选择“运行”：
+
+http://lajp.googlecode.com/svn/wiki/images/java_install_05.png 
+
+开始安装：
+
+http://lajp.googlecode.com/svn/wiki/images/java_install_06.png 
+
+安装成功：
+
+http://lajp.googlecode.com/svn/wiki/images/java_install_07.png 
