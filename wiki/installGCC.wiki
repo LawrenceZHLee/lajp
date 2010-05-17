@@ -1,4 +1,4 @@
-#labels 在Linux上安装GCC
+#labels 在Linux上安装GCC,Deprecated
 _因Linux发行版众多，安装步骤差别很大，本文档仅作为参考_
 
 == Ubuntu ==
