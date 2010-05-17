@@ -59,24 +59,53 @@ LAJP有两个核心能力：
 
  * Windows系统只能使用socket模式
 
-* 在开发过程中可以同时使用这两种模式，比如一般开发者使用Windows环境，而程序部署在Linux系统中，LAJP在模式的配置上和编码无关 *
+* 在开发过程中可以同时使用这两种模式，比如一般开发者使用Windows环境，而程序部署在Linux系统中，LAJP在模式的配置上和编码无关。 *
 
 == LAJP安装配置 ==
 
 === Windows下的LAJP安装配置 ===
 
-阅读 [http://code.google.com/p/lajp/wiki/Win_Install 图解LAJP在Windows系统上的安装配置 ]
+请阅读 [http://code.google.com/p/lajp/wiki/Win_Install 图解LAJP在Windows系统上的安装配置 ]
 
 === Unix/Linux下的LAJP安装配置 ===
+ 
+ * *下载* 下载Lajp的安装文件，解压后目录结构如下：
+{{{
+lajp安装包
+  |
+  |--jin
+  |   |
+  |   |--lajp_MsgQ.h
+  |   |--lajp_MsgQ.c
+  |   |--make.sh
+  |   
+  |--php
+  |   |
+  |   |--php_java.php.msgq
+  |   |--php_java.php.socket
+  |   
+  |--test_service/             //Hello World 示例程序
+  |   
+  |--lajp-10.05.jar
+  |--run_msgq.sh
+  |--run-socket.bat
+  |--run-socket.sh
+}}}
 
- * *php端安装* 部分发行版本的php默认安装不支持消息队列(System V messages)、信号量(System V semaphore)、共享内存(System V shared memory), 在编译php时需附带编译选项 --enable-sysvsem,--enable-sysvshm和--enable-sysvmsg添加支持。可以通过phpinfo()函数来观察php运行环境是否激活了上述功能。
+==== Unix/Linux中运行LAJP依赖以下前提设置 ====
 
- * *java端安装* 首先需下载lajp-_version_.jar，并安装jsdk5以上版本（注意：在不同环境中java的安装是不同的，具体请参考SUN公司的Java安装帮助文档)，其次需要编译安装Java调用消息队列的JNI动态库，这是LAJP所有安装配置中最复杂的一个，详情如下：
+ * *Apache+php环境* 部分发行版本的php默认安装不支持消息队列(System V messages)、信号量(System V semaphore)、共享内存(System V shared memory), 如使用消息队列模式需在编译php时需附带编译选项 --enable-sysvsem,--enable-sysvshm和--enable-sysvmsg添加支持；如使用socket模式则要检查sockets是否激活，这些可以通过phpinfo()函数来观察。
 
-==== Windows下的LAJP安装配置 ====
+ * *java环境* 要求Java5.0以上。
 
-    # 配置好c语言编译环境
-    # 将下载的lajp安装包中的3个源代码文件：lajp_MsgQ.c,lajp_MsgQ.h,make.sh复制到某个目录，确保make.sh有执行权限，按注释要求编辑make.sh
+==== Unix/Linux中socket模式的配置运行 ====
+
+Socket模式使用run_socket.sh脚本，运行前确保run_socket.sh有执行权限，在脚本内部可以配置Java服务端口（默认21230），PHP和Java传输字符集（默认UTF-8），classpath等。
+
+==== Unix/Linux中消息队列模式的配置运行 ====
+
+ * * 首先配置好c语言编译环境 *
+ * * 编译JNI * 将下载的lajp安装包中的3个源代码文件：lajp_MsgQ.c,lajp_MsgQ.h,make.sh复制到某个目录，确保make.sh有执行权限，按注释要求编辑make.sh
 {{{
 #!/bin/sh
 
@@ -101,7 +130,7 @@ LAJP有两个核心能力：
 
 gcc lajp_MsgQ.c --share -I. -I/usr/lib/jvm/java-6-sun/include -I/usr/lib/jvm/java-6-sun/include/linux -o liblajpmsgq.so
 }}}
-    # 编译 ： 执行 ./make.sh 编译
+    # 编译 ： 执行 ./make.sh 
     # 部署编译好的liblajpmsgq.so库文件： 如果编译成功，会生成liblajpmsgq.so文件，将它复制到任一个"java.library.path"路径中，"java.library.path"路径可以通过java程序侦测: System.out.println(System.getProperties().getProperty("java.library.path"))
 
  * *消息队列配置*  
@@ -110,6 +139,7 @@ gcc lajp_MsgQ.c --share -I. -I/usr/lib/jvm/java-6-sun/include -I/usr/lib/jvm/jav
     # MSGMNI 指定系统中消息队列最大数目
     # MSGMAX 指定一个消息的最大长度
     # MSGMNB 指定在一个消息队列中最大的字节数
+
 一般性的，Linux系统的默认消息队列配置非常可怜，通过查看下面三个文件获得系统配置信息：
     * /proc/sys/kernel/msgmni 缺省设置：16
     * /proc/sys/kernel/msgmax 缺省设置：8192
@@ -123,58 +153,16 @@ kernel.msgmnb = 20971520
 kernel.msgmni = 20480
 }}}
  
-=== socket模式 ===
+消息队列模式使用run_msgq.sh脚本，运行前确保run_msgq.sh有执行权限，在脚本内部可以配置Java服务端口（默认21230），PHP和Java传输字符集（默认UTF-8），classpath等。
 
- * *php端安装* 无特殊要求，需通过phpinfo()函数来检查php运行环境是否激活socket功能。
 
- * *java端安装* 需下载lajp-socket-_version_.jar，并安装jsdk5以上版本（注意：在不同环境中java的安装是不同的，具体请参考SUN公司的Java安装帮助文档)。
 
- * Windows中的安装可参考 http://code.google.com/p/lajp/wiki/Win_Install
 
-== 运行 ==
+== LAJP使用注意事项 ==
 
- * *运行启动顺序* 在LAJP中，PHP作为客户(client)调用Java服务(service),启动顺序：
-    # Java服务
-    # php程序
+ * *Java* Java方法如果要做为LAJP的服务方法，必须声明为 public static final
 
- * *php如何调用java服务方法*
-
-php调用java服务方法，需要导入包含"lajp_call()"函数的文件，文件可在下载包中找到：java_php.php对应"消息队列版", java_php_socket.php对应"socket版"，php程序调用示例：
-{{{
-require_once("../lajp/php_java.php"); //导入java_php.php, 这里使用"消息队列版"
-
-$a = 1;
-$b = 2;
-//调用Java端com.foo.MyClass类中的whichMax方法，并传入两个整形参数，Java方法返回值赋于$c。
-$c = ("com.foo.MyClass::whichMax", $a, $b); 
-}}}
-有关传参和返回值类型的要求和转换关系请查看"数据类型"章节。
-
- * *java服务方法*
-
-要作为LAJP中Java端的服务方法，和普通的Java方法的区别有两个：
-    # 方法必须声明为 *public* *static* *final*
-    # 方法参数类型和返回值类型需要符合一定要求（请查看"数据类型"章节）
-上面的示例对应的Java服务代码:
-{{{
-package com.foo;
-public class MyClass
-{
-  public static final whichMax(int v1, int v2)
-  {
-    if (v1 > v2)
-    {
-      return v1;
-    }
-    else
-    {
-      return v2;
-    }
-  }
-}
-}}}
-
-== 数据类型 ==
+ * *数据类型* PHP和Java通过LAJP传输的数据，包括PHP调用时向Java传的参数，和Java方法的返回值，需要遵循LAJP数据类型要求。
 
 php语言规范定义了8中数据类型：boolean、int、float、string、array、object、resource、NULL；java语言的数据类型分为2类：基本数据类型和对象类型，基本数据类型有byte、short、int、long、 char、boolean、float、double, 对象类型包括数组、集合、javaBean等。在LAJP架构中，php数据以参数形式传递给Java方法，Java方法的返回值再回传给php调用程序，在调用过程中，php数据“自动”转换为Java数据，反之亦然。
 
@@ -191,365 +179,4 @@ php语言规范定义了8中数据类型：boolean、int、float、string、arra
 || 对象 ||object|| _JavaBean_ ||  ||
 || 空 ||NULL||null||  ||
 
- * *php_int*
-
-在PHP中，整形的范围是 -2^31^ ~ 2^31^-1, 和Java的int类型一致。
-
- * *php_float*
-
-在PHP中，浮点型不区分单精度(float)和双精度(double)，转换时按到Java的双精度(double)转换。
-
- * *php_double*
-
-同上。
-
- * *php_boolean*
-
-在PHP中，布尔类型的值有两个：TRUE和FALSE，转换到Java分别对应：true和false。
-
- * *php_string*
-
-在PHP中，字符串转换到Java对应java.lang.String类型。
-
- * *php_array*
-
-在PHP中，array可以描述多种结构： 顺序集合(类似Java的{{{ArrayList}}})，key-value集合(类似Java的Hashtable或{{{HashMap}}})，栈等。在LAJP中只能使用两种结构：
- # *顺序集合* 集合元素的key类型为int类型。  
-{{{
-$a = array();
-$a[0] = 10;
-$a[1] = 20;
-$a[2] = 30;
-
-// 也可以:
-$a = array();
-$a[] = 10;
-$a[] = 20;
-$a[] = 30;
-}}}
- # *key-value集合* 集合元素的key类型为string类型。
-{{{
-$a = array();
-$a["a"] = 10;
-$a["b"] = 20;
-$a["c"] = 30;
-}}}
-
-在PHP的array转换为Java时，LAJP内部是通过查看array的第一个元素的key，如果key是int类型，被转换为{{{java.util.ArrayList}}}；如果key是string类型，被转换为{{{java.util.HashMap}}}。
-
-在PHP的array中的元素，可以是表1中的任何一种类型，包括array和Object，这意味着可以构建出复杂的结构，如数组中的数组(通常称为二维或多维数组)。
-
- * *php_object*
-
-PHP对象被映射到Jave的{{{JavaBean}}}对象，这意味着PHP类中的每一个属性，在Java对应类中都有一个同名，同类型(符合表1映射关系)的属性，且此属性有getter和setter方法。
-
-目前只支持PHP4规范对象转换到Java，这是因为在LAJP内部转换时需要将PHP对象数据序列化，PHP5对象不能转换，因此在编写lajp_call函数的传参对象时需要注意书写规范。
-
-目前也不支持PHP中的命名空间(Namespaces)，在PHP中用{{{"_"}}}表示Java中的{{{"."}}}，如要映射到Java的{{{"com.foo.MyClass"}}}类，需要在PHP中定义类{{{"com_foo_MyClass"}}}。
-{{{
-//映射到Java的com.foo.User类
-class com_foo_User
-{
-  var $userName;
-  var $userPasswd;
-  var $userAge;
-}
-}}}
-
-对象可以包含其他对象，因此可以创建复杂的数据结构，这里有一个相对复杂的示例:
-{{{
-<?php
-require_once("../lajp/php_java.php");
-//require_once("../lajp/php_java_socket.php");
-
-class cn_com_ail_test_Bean
-{
-  var $a = "v1";
-  var $b = "v2";
-}
-
-class cn_com_aili_PhpObject
-{
-  var $a = 10;
-  var $b = 10.05;
-  var $c = TRUE;
-  var $d = "abc";
-}
-class cn_com_aili_test_Bean
-{
-  var $a = 10;
-  var $b = 10.05;
-  var $c = TRUE;
-  var $d = "abc";
-  var $e = array(10, 20, 30, 40);
-  var $f;
-  function cn_com_aili_test_Bean()
-  {
-    $this->f = new cn_com_aili_PhpObject;
-  }
-}
-
-$p1 = "a";
-$p2 = array();
-$p2[] = 10;
-$p2[] = 20;
-$p3 = new cn_com_ail_test_Bean;
-$p4 = new cn_com_aili_test_Bean;
-
-try
-{
-  $ret += lajp_call("cn.com.ail.test.Objtest::method1", $p1, $p2, $p3, $p4);
-  echo "方法调用返回: $ret<br>";
-}
-catch (Exception $e)
-{
-  echo "异常:".$e."<br>";
-}
-?>
-}}}
-
-Java代码:
-{{{
-package cn.com.ail.test;
-
-public class Bean
-{
-	private String a;
-	private String b;
-	
-	public String getA()
-	{
-		return a;
-	}
-	public void setA(String a)
-	{
-		this.a = a;
-	}
-	public String getB()
-	{
-		return b;
-	}
-	public void setB(String b)
-	{
-		this.b = b;
-	}
-}
-}}}
-
-{{{
-package cn.com.aili;
-
-public class PhpObject
-{
-  private int a;
-  private double b;
-  private boolean c;
-  private String d;
-	
-  public int getA()
-  {
-    return a;
-  }
-  public void setA(int a)
-  {
-    this.a = a;
-  }
-  public double getB()
-  {
-    return b;
-  }
-  public void setB(double b)
-  {
-    this.b = b;
-  }
-  public boolean isC()
-  {
-    return c;
-  }
-  public void setC(boolean c)
-  {
-    this.c = c;
-  }
-  public String getD()
-  {
-    return d;
-  }
-  public void setD(String d)
-  {
-    this.d = d;
-  }
-}
-}}}
-
-{{{
-package cn.com.aili.test;
-
-import java.util.List;
-import cn.com.aili.PhpObject;
-
-public class Bean
-{
-  private int a;
-  private double b;
-  private boolean c;
-  private String d;
-  private List e;
-  private PhpObject f;
-	
-  public int getA()
-  {
-    return a;
-  }
-  public void setA(int a)
-  {
-    this.a = a;
-  }
-  public double getB()
-  {
-    return b;
-  }
-  public void setB(double b)
-  {
-    this.b = b;
-  }
-  public boolean isC()
-  {
-    return c;
-  }
-  public void setC(boolean c)
-  {
-    this.c = c;
-  }
-  public String getD()
-  {
-    return d;
-  }
-  public void setD(String d)
-  {
-    this.d = d;
-  }
-  public List getE()
-  {
-    return e;
-  }
-  public void setE(List e)
-  {
-    this.e = e;
-  }
-  public PhpObject getF()
-  {
-    return f;
-  }
-  public void setF(PhpObject f)
-  {
-    this.f = f;
-  }
-}
-}}}
-
-{{{
-package cn.com.ail.test;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-public class Objtest
-{
-  //服务方法
-  public static final int method1(String p1, List<?> p2, 
-      cn.com.ail.test.Bean p3, cn.com.aili.test.Bean p4)
-  {
-    System.out.printf("p1:%s\n", p1);
-		
-    if (p2 != null)
-    {
-      for (Object obj : p2)
-      {
-        System.out.printf("p2:%s\n", obj);
-      }
-    }
-    else
-    {
-      System.out.printf("p2:null\n");
-    }
-		
-    if (p3 != null)
-    {
-      System.out.printf("p3-a:%s\n", p3.getA());
-      System.out.printf("p3-b:%s\n", p3.getB());
-    }
-    else
-    {
-      System.out.printf("p3:null\n");
-    }
-		
-    if (p4 != null)
-    {
-      System.out.printf("p4-a:%s\n", p4.getA());
-      System.out.printf("p4-b:%s\n", p4.getB());
-      System.out.printf("p4-c:%s\n", p4.isC());
-      System.out.printf("p4-d:%s\n", p4.getD());
-      if (p4.getE() != null)
-      {
-        for (Object obj : p4.getE())
-        {
-          System.out.printf("p4-e:%s\n", obj);
-        }
-      }
-      else
-      {
-        System.out.printf("p4-e:null\n");
-      }
-
-      cn.com.aili.PhpObject php = p4.getF();
-      if (php != null)
-      {
-        System.out.printf("p4-f-a:%s\n", php.getA());
-        System.out.printf("p4-f-b:%s\n", php.getB());
-        System.out.printf("p4-f-c:%s\n", php.isC());
-        System.out.printf("p4-f-d:%s\n", php.getD());
-      }
-      else
-      {
-        System.out.printf("p4-f:null\n");
-      }
-    }
-    else
-    {
-      System.out.printf("p4:null\n");
-    }
-				
-    return 100;
-  }
-}
-}}}
-
- * *php_NULL*
-
-PHP中的NUL，对应Java中的null。
-
- * *java_基本数据类型*
-
-Java中的基本数据类型，在转换时只能使用其中的int,double和boolean，参见表1。
-
- * *java_字符串*
-
-Java中的java.util.String，转换为PHP的string。
-
- * *java_集合*
-
-在Java的集合转换中，只能使用{{{java.util.List}}}及其子类，和{{{java.util.Map}}}及其子类，都对应转换为PHP的array。
-
- * *java_对象*
-
-Java中要转换的对象，必须符合JavaBean规范。
-
- * *java_异常*
-
-Java服务方法可以抛出异常，LAJP将捕获此异常，并转换为PHP异常抛给调用者。
-
- * *java_null*
-
-Java中的null，将转换为PHP的NULL。
+详细的数据转换规则请查阅 [http://code.google.com/p/lajp/wiki/Example 数据转换示例 ]
