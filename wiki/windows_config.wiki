@@ -1,4 +1,4 @@
-#labels Windows环境注意事项
+#labels Windows环境注意事项,Deprecated
 ----
 == called to undefined function socket_create 错误 ==
 
