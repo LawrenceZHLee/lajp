@@ -1,4 +1,4 @@
-#labels HelloWorld程序
+#labels HelloWorld程序,Deprecated
 = 快速创建LAJP的Hello World程序 =
 
 == 第一步 下载 ==
