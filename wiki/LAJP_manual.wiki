@@ -27,7 +27,7 @@ LAJP有两个核心能力：
 
 在LAJP的当前版本中，使用两种技术进行PHP和Java间的通信，我对它们分别命名为： *消息队列模式* 和 *socket模式* 。它们各自有优缺点，在使用中应根据程序所在环境特点加以选择：
  * *消息队列* 以System V的消息队列作为PHP和Java间的通信媒介，优点是理论速度快，占用资源较小；缺点是只能使用在支持System V的系统中，可运用于大多数的Unix/Linux/BSD系统，但不能用于windows。
- * *socket* 以TCP/IP作为PHP和Java间的通信媒介，优点是无系统限制(所有系统都支持)；缺点是理论速度慢，占用资源较大。
+ * *socket* 以TCP/IP作为PHP和Java间的通信媒介，优点是基本无系统限制；缺点是理论速度慢，占用资源较大。
 
 == LAJP运行环境要求 ==
 
@@ -49,7 +49,7 @@ LAJP有两个核心能力：
 
 === socket模式 ===
 
- * *系统* 没有限制，很难找到不支持tcp/ip的系统。
+ * *系统* 没有限制，很难找到不支持TCP/IP的系统。
 
  * *php* 按照php帮助的说明,php版本>=4.1.0支持socket
 
@@ -59,15 +59,22 @@ LAJP有两个核心能力：
 
  * Windows系统只能使用socket模式
 
+* 在开发过程中可以同时使用这两种模式，比如一般开发者使用Windows环境，而程序部署在Linux系统中，LAJP在模式的配置上和编码无关 *
+
 == LAJP安装配置 ==
 
-"消息队列模式"和"socket模式"的安装也是不同的，下面分别加以阐述：
+=== Windows下的LAJP安装配置 ===
 
-=== 消息队列版 ===
+阅读 [http://code.google.com/p/lajp/wiki/Win_Install 图解LAJP在Windows系统上的安装配置 ]
+
+=== Unix/Linux下的LAJP安装配置 ===
 
  * *php端安装* 部分发行版本的php默认安装不支持消息队列(System V messages)、信号量(System V semaphore)、共享内存(System V shared memory), 在编译php时需附带编译选项 --enable-sysvsem,--enable-sysvshm和--enable-sysvmsg添加支持。可以通过phpinfo()函数来观察php运行环境是否激活了上述功能。
 
  * *java端安装* 首先需下载lajp-_version_.jar，并安装jsdk5以上版本（注意：在不同环境中java的安装是不同的，具体请参考SUN公司的Java安装帮助文档)，其次需要编译安装Java调用消息队列的JNI动态库，这是LAJP所有安装配置中最复杂的一个，详情如下：
+
+==== Windows下的LAJP安装配置 ====
+
     # 配置好c语言编译环境
     # 将下载的lajp安装包中的3个源代码文件：lajp_MsgQ.c,lajp_MsgQ.h,make.sh复制到某个目录，确保make.sh有执行权限，按注释要求编辑make.sh
 {{{
