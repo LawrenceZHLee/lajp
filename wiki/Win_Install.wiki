@@ -1,0 +1,55 @@
+#summary One-sentence summary of this page.
+#labels LAJP在Windows系统上的安装帮助
+
+= Win Install=
+
+在Windows系统上运行PHP有多种选择，这里描述的是比较流行的Apapche+PHP方式。
+
+= 安装Apache =
+
+从Apache网站下载Apache服务安装程序，直接运行：
+
+http://lajp.googlecode.com/svn/wiki/images/apache_install_01.png
+
+点击运行：
+
+http://lajp.googlecode.com/svn/wiki/images/apache_install_02.png
+
+NEXT：
+
+http://lajp.googlecode.com/svn/wiki/images/apache_install_03.png
+
+NEXT：
+
+http://lajp.googlecode.com/svn/wiki/images/apache_install_04.png
+
+输入域名，如果是开发机器随便起名，NEXT：
+
+http://lajp.googlecode.com/svn/wiki/images/apache_install_05.png
+
+NEXT：
+
+http://lajp.googlecode.com/svn/wiki/images/apache_install_06.png
+
+选择安装路径，NEXT：
+
+http://lajp.googlecode.com/svn/wiki/images/apache_install_07.png
+
+Install：
+
+http://lajp.googlecode.com/svn/wiki/images/apache_install_08.png
+
+安装：
+
+http://lajp.googlecode.com/svn/wiki/images/apache_install_09.png
+
+安装完成后，在系统托盘中出现Apache服务图标：
+
+http://lajp.googlecode.com/svn/wiki/images/apache_install_10.png
+
+测试以下Apache服务，在地址栏中敲入 http://127.0.0.1  正常显示It works!页面。
+
+http://lajp.googlecode.com/svn/wiki/images/apache_install_10.png
+
+
+
