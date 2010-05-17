@@ -46,7 +46,7 @@ http://lajp.googlecode.com/svn/wiki/images/apache_install_09.png
 
 http://lajp.googlecode.com/svn/wiki/images/apache_install_10.png
 
-测试以下Apache服务，在地址栏中敲入 http://127.0.0.1  正常显示It works!页面。
+测试一下Apache服务，在地址栏中敲入 http://127.0.0.1  正常显示It works!页面。
 
 http://lajp.googlecode.com/svn/wiki/images/apache_install_11.png
 
@@ -137,3 +137,48 @@ http://lajp.googlecode.com/svn/wiki/images/java_install_06.png
 安装成功：
 
 http://lajp.googlecode.com/svn/wiki/images/java_install_07.png 
+
+=== 四、安装LAJP ===
+
+从LAJP的网站 http://code.google.com/p/lajp/downloads/list 下载最新的LAJP开发包(目前lajp-10.05.zip)。
+
+解压到指定目录，本文中为 C:\lajp-10.05 (为方便叙述，下面以C:\lajp-10.05为指定目录)。
+
+双击运行 run-socket.bat，如果是第一次运行Java程序，Windows会弹出安全警报，点击“解除阻止”：
+
+http://lajp.googlecode.com/svn/wiki/images/java_install_08.png
+
+cmd窗口中显示下图，表示Java端服务已经启动：
+
+http://lajp.googlecode.com/svn/wiki/images/java_install_09.png
+
+拷贝 C:\lajp-10.05\php\php_java.php.socket 到Web发布目录，上面Apapche安装后是"C:\Program Files\Apache Software Foundation\Apache2.2\htdocs",
+
+进入目录"C:\Program Files\Apache Software Foundation\Apache2.2\htdocs",将“php_java.php.socket”改名为“php_java.php”，创建一个测试PHP文件“hello.php”：
+
+{{{
+<?php
+
+require_once("php_java.php");
+
+$name = "LAJP";
+
+try
+{
+  //调用Java的hello.HelloClass类中的hello方法
+  $ret = lajp_call("hello.HelloClass::hello", $name);
+  echo "{$ret}<br>";
+}
+catch (Exception $e)
+{
+  echo "Err:{$ret}<br>";
+}
+
+?>
+}}}
+
+浏览器地址栏输入 http://127.0.0.1/hello.php，入成功则输出：
+
+http://lajp.googlecode.com/svn/wiki/images/java_install_10.png
+
+【完】
