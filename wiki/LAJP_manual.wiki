@@ -153,7 +153,7 @@ kernel.msgmnb = 20971520
 kernel.msgmni = 20480
 }}}
  
-消息队列模式使用run_msgq.sh脚本，运行前确保run_msgq.sh有执行权限，在脚本内部可以配置Java服务端口（默认21230），PHP和Java传输字符集（默认UTF-8），classpath等。
+消息队列模式使用run_msgq.sh脚本，运行前确保run_msgq.sh有执行权限，在脚本内部可以配置PHP和Java传输字符集（默认UTF-8），classpath等。
 
 
 
