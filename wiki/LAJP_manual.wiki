@@ -61,7 +61,7 @@ LAJP有两个核心能力：
 
 * 在开发过程中可以同时使用这两种模式，比如一般开发者使用Windows环境，而程序部署在Linux系统中，LAJP在模式的配置上和编码无关。 *
 
-== LAJP安装配置 ==
+== LAJP安装与运行 ==
 
 === Windows下的LAJP安装配置 ===
 
@@ -133,26 +133,6 @@ gcc lajp_MsgQ.c --share -I. -I/usr/lib/jvm/java-6-sun/include -I/usr/lib/jvm/jav
     # 编译 ： 执行 ./make.sh 
     # 部署编译好的liblajpmsgq.so库文件： 如果编译成功，会生成liblajpmsgq.so文件，将它复制到任一个"java.library.path"路径中，"java.library.path"路径可以通过java程序侦测: System.out.println(System.getProperties().getProperty("java.library.path"))
 
- * *消息队列配置*  
-
-对于消息队列，有三个系统配置影响其性能：
-    # MSGMNI 指定系统中消息队列最大数目
-    # MSGMAX 指定一个消息的最大长度
-    # MSGMNB 指定在一个消息队列中最大的字节数
-
-一般性的，Linux系统的默认消息队列配置非常可怜，通过查看下面三个文件获得系统配置信息：
-    * /proc/sys/kernel/msgmni 缺省设置：16
-    * /proc/sys/kernel/msgmax 缺省设置：8192
-    * /proc/sys/kernel/msgmnb 缺省设置：16384
-为了更好的性能，通过编辑{{{/etc/sysctl.conf}}}文件，修改缺省配置：
-{{{
-# /etc/sysctl.conf
-
-# set message queue 20M
-kernel.msgmnb = 20971520
-kernel.msgmni = 20480
-}}}
- 
 消息队列模式使用run_msgq.sh脚本，运行前确保run_msgq.sh有执行权限，在脚本内部可以配置PHP和Java传输字符集（默认UTF-8），classpath等。
 
 
@@ -180,3 +160,160 @@ php语言规范定义了8中数据类型：boolean、int、float、string、arra
 || 空 ||NULL||null||  ||
 
 详细的数据转换规则请查阅 [http://code.google.com/p/lajp/wiki/Example 数据转换示例 ]
+
+
+
+== LAJP基本配置 ==
+
+LAJP只是单纯的PHP和Java传输的中间机制，像Web系统中常见的数据库连接池、JNDI、缓存等需要开发者自己管理。
+
+ * *消息队列配置*  
+
+对于消息队列，有三个系统配置影响其性能：
+    # MSGMNI 指定系统中消息队列最大数目
+    # MSGMAX 指定一个消息的最大长度
+    # MSGMNB 指定在一个消息队列中最大的字节数
+
+一般性的，Linux系统的默认消息队列配置非常可怜，通过查看下面三个文件获得系统配置信息：
+    * /proc/sys/kernel/msgmni 缺省设置：16
+    * /proc/sys/kernel/msgmax 缺省设置：8192
+    * /proc/sys/kernel/msgmnb 缺省设置：16384
+为了更好的性能，通过编辑{{{/etc/sysctl.conf}}}文件，修改缺省配置：
+{{{
+# /etc/sysctl.conf
+
+# set message queue 20M
+kernel.msgmnb = 20971520
+kernel.msgmni = 20480
+}}}
+
+ * *socket侦听端口配置*
+
+在socket模式中，Java端默认的侦听端口是21230，如要修改，有两处：
+
+    # php_java.php ： 在下载包中命名为php_java.php.socket
+{{{
+define("LAJP_IP", "127.0.0.1");			//Java端IP
+define("LAJP_PORT", 新的端口);			//Java端侦听端口
+}}}
+
+    # run-socket启动脚本 ： windows中使用run-socket.bat，Unix/Linux中使用run-socket.sh
+
+windows中在run-socket.bat中添加下面两行：
+{{{
+rem 设置服务侦听端口
+set SERVICE_PORT=新的端口
+}}}
+
+Unix/linux中在run-socket.sh中修改下面两行：
+{{{
+# 设置服务侦听端口
+# export SERVICE_PORT=新的端口
+}}}
+
+ * *传输字符集*
+
+LAJP中默认的PHP和Java交互字符集是UTF-8，可通过修改启动脚本环境变量变更。
+
+run-socket.bat
+{{{
+rem 字符集设置  GBK | UTF-8
+
+rem set CHARSET=UTF-8
+}}}
+
+run-socket.sh或run-msgq.sh
+{{{
+# 字符集设置  GBK|UTF-8
+# export CHARSET=UTF-8
+}}}
+
+=== 配置示例 ===
+
+一般性的使用Java链接数据库需要配置数据源，这里提供一个简单的配置示例，以供参考。
+
+项目：
+    # 一个简单的Web应用
+    # 数据库：Mysql
+    # 数据源：DBCP
+
+run-msgq.sh
+{{{
+#!/bin/sh
+
+# -----------------------------------------------------------
+#  LAJP-Java Service 启动脚本 
+#		
+# 		(2009-10 http://code.google.com/p/lajp/)
+#  
+# -----------------------------------------------------------
+
+#-----------------------
+#DBCP配置
+export DBCP_url="jdbc:mysql://127.0.0.1:3306/paper?characterEncoding=utf8&zeroDateTimeBehavior=round"
+export DBCP_username=root
+export DBCP_password=root
+export DBCP_maxActive=30
+export DBCP_maxIdle=10
+export DBCP_maxWait=1000
+export DBCP_removeAbandoned=false
+export DBCP_removeAbandonedTimeout=120
+export DBCP_testOnBorrow=true
+export DBCP_validationQuery="select 1"
+export DBCP_logAbandoned=true
+#-----------------------
+
+
+# java服务中需要的jar文件或classpath路径，如业务程序、第三方jar文件(如log4j等)
+export other_classpath=lib/commons-beanutils-1.8.2.jar:lib/commons-logging-1.1.1.jar:lib/log4j-1.2.8.jar:lib/commons-dbcp-1.2.2.jar:lib/commons-collections-3.2.1.jar:lib/commons-pool-1.5.4.jar:lib/mysql-connector-java-5.1.7-bin.jar:lib/lajp_10.04.jar:bin/
+
+# 自动启动类和方法，LAJP服务启动时会自动加载并执行
+export AUTORUN_CLASS=cn.programmerdigest.Init
+export AUTORUN_METHOD=init
+
+# 字符集设置  GBK|UTF-8
+# export CHARSET=GBK
+
+# LAJP服务启动指令(前台)
+java -classpath .:$other_classpath lajp.PhpJava
+
+# LAJP服务启动指令(后台)
+# nohup java -classpath lajp_9.10.jar:$other_classpath lajp.PhpJava &
+}}}
+
+Java自动启动方法cn.programmerdigest.Init类中的init方法:
+{{{
+	/**
+	 * 初始化DBCP数据源
+	 */
+	public static void init()
+	{
+
+		try
+		{
+			Properties p = new Properties();
+			p.setProperty("driverClassName", "com.mysql.jdbc.Driver");
+			p.setProperty("url", System.getenv("DBCP_url"));
+			p.setProperty("username", System.getenv("DBCP_username"));
+			p.setProperty("password", System.getenv("DBCP_password"));
+			p.setProperty("maxActive", System.getenv("DBCP_maxActive"));
+			p.setProperty("maxIdle", System.getenv("DBCP_maxIdle"));
+			p.setProperty("maxWait", System.getenv("DBCP_maxWait"));
+			p.setProperty("removeAbandoned", System.getenv("DBCP_removeAbandoned"));
+			p.setProperty("removeAbandonedTimeout", System.getenv("DBCP_removeAbandonedTimeout"));
+			p.setProperty("testOnBorrow", System.getenv("DBCP_testOnBorrow"));
+			p.setProperty("validationQuery", System.getenv("DBCP_validationQuery"));
+			p.setProperty("logAbandoned", System.getenv("DBCP_logAbandoned"));
+
+			//创建数据源
+			dataSource = (BasicDataSource) BasicDataSourceFactory
+					.createDataSource(p);
+
+		}
+		catch (Exception e)
+		{
+			//--
+			throw new RuntimeException(e.getMessage());
+		}
+	}
+}}}
