@@ -39,7 +39,7 @@ LAJP有两个核心能力：
 
  * *系统* 目前常见的Unix/Linux系统都可满足php(Apache)、java的运行，其中大部分默认支持System V消息队列。
 
- * *php* php需要通过消息队列和java进程通信，按照php帮助的说明,php在4.3.0版本以后支持System V消息队列。
+ * *php* php需要通过消息队列和java进程通信，按php的说明，php在4.3.0版本以后支持System V消息队列。
 
  * *apache* 无特殊要求，满足php要求即可。
 
@@ -51,7 +51,7 @@ LAJP有两个核心能力：
 
  * *系统* 没有限制，很难找到不支持TCP/IP的系统。
 
- * *php* 按照php帮助的说明,php版本>=4.1.0支持socket
+ * *php* 按php的说明，php版本>=4.1.0支持socket
 
  * *apache* 无特殊要求，满足php要求即可。
 
@@ -73,34 +73,34 @@ LAJP有两个核心能力：
 {{{
 lajp安装包
   |
-  |--jin
+  |--jin                      //消息队列模式必要的JNI源程序
   |   |
   |   |--lajp_MsgQ.h
   |   |--lajp_MsgQ.c
   |   |--make.sh
   |   
-  |--php
+  |--php                       //PHP端脚本
   |   |
   |   |--php_java.php.msgq
   |   |--php_java.php.socket
   |   
-  |--test_service/             //Hello World 示例程序
+  |--test_service/             //Hello World 示例服务程序
   |   
-  |--lajp-10.05.jar
-  |--run_msgq.sh
-  |--run-socket.bat
-  |--run-socket.sh
+  |--lajp-10.05.jar            //LAJP主程序
+  |--run_msgq.sh               //Unix/Linux使用消息队列模式启动脚本
+  |--run-socket.bat            //windows使用启动脚本
+  |--run-socket.sh             //Unix/Linux使用socket模式启动脚本
 }}}
 
 ==== Unix/Linux中运行LAJP依赖以下前提设置 ====
 
- * *Apache+php环境* 部分发行版本的php默认安装不支持消息队列(System V messages)、信号量(System V semaphore)、共享内存(System V shared memory), 如使用消息队列模式需在编译php时需附带编译选项 --enable-sysvsem,--enable-sysvshm和--enable-sysvmsg添加支持；如使用socket模式则要检查sockets是否激活，这些可以通过phpinfo()函数来观察。
+ * *Apache+php环境* 部分发行版本的php默认安装不支持消息队列(System V messages)、信号量(System V semaphore)、共享内存(System V shared memory), 如使用消息队列模式需在编译php时附带编译选项 --enable-sysvsem,--enable-sysvshm和--enable-sysvmsg；如使用socket模式则要检查sockets是否激活，这些可以通过phpinfo()函数来观察。
 
  * *java环境* 要求Java5.0以上。
 
 ==== Unix/Linux中socket模式的配置运行 ====
 
-Socket模式使用run_socket.sh脚本，运行前确保run_socket.sh有执行权限，在脚本内部可以配置Java服务端口（默认21230），PHP和Java传输字符集（默认UTF-8），classpath等。
+Socket模式使用run-socket.sh脚本，运行前确保run-socket.sh有执行权限，在脚本内部可以配置Java服务端口（默认21230），PHP和Java传输字符集（默认UTF-8），classpath等。
 
 ==== Unix/Linux中消息队列模式的配置运行 ====
 
@@ -140,9 +140,9 @@ gcc lajp_MsgQ.c --share -I. -I/usr/lib/jvm/java-6-sun/include -I/usr/lib/jvm/jav
 
 == LAJP使用注意事项 ==
 
- * *Java* Java方法如果要做为LAJP的服务方法，必须声明为 public static final
+ * *Java* Java方法如果要做为LAJP的服务方法，必须声明为 *public static final*
 
- * *数据类型* PHP和Java通过LAJP传输的数据，包括PHP调用时向Java传的参数，和Java方法的返回值，需要遵循LAJP数据类型要求。
+ * *数据类型* PHP和Java通过LAJP传输的数据，包括PHP调用时向Java传递的参数，和Java方法的返回值，都需要遵循LAJP数据类型要求。
 
 php语言规范定义了8中数据类型：boolean、int、float、string、array、object、resource、NULL；java语言的数据类型分为2类：基本数据类型和对象类型，基本数据类型有byte、short、int、long、 char、boolean、float、double, 对象类型包括数组、集合、javaBean等。在LAJP架构中，php数据以参数形式传递给Java方法，Java方法的返回值再回传给php调用程序，在调用过程中，php数据“自动”转换为Java数据，反之亦然。
 
@@ -178,7 +178,7 @@ LAJP只是单纯的PHP和Java传输的中间机制，像Web系统中常见的数
     * /proc/sys/kernel/msgmni 缺省设置：16
     * /proc/sys/kernel/msgmax 缺省设置：8192
     * /proc/sys/kernel/msgmnb 缺省设置：16384
-为了更好的性能，通过编辑{{{/etc/sysctl.conf}}}文件，修改缺省配置：
+为了更好的性能，可编辑{{{/etc/sysctl.conf}}}文件，修改缺省配置：
 {{{
 # /etc/sysctl.conf
 
@@ -191,13 +191,13 @@ kernel.msgmni = 20480
 
 在socket模式中，Java端默认的侦听端口是21230，如要修改，有两处：
 
-    # php_java.php ： 在下载包中命名为php_java.php.socket
+    * php_java.php ： 在下载包中命名为php_java.php.socket
 {{{
 define("LAJP_IP", "127.0.0.1");			//Java端IP
 define("LAJP_PORT", 新的端口);			//Java端侦听端口
 }}}
 
-    # run-socket启动脚本 ： windows中使用run-socket.bat，Unix/Linux中使用run-socket.sh
+    * run-socket启动脚本 ： windows中使用run-socket.bat，Unix/Linux中使用run-socket.sh
 
 windows中在run-socket.bat中添加下面两行：
 {{{
@@ -205,10 +205,10 @@ rem 设置服务侦听端口
 set SERVICE_PORT=新的端口
 }}}
 
-Unix/linux中在run-socket.sh中修改下面两行：
+Unix/linux中在run-socket.sh中修改：
 {{{
 # 设置服务侦听端口
-# export SERVICE_PORT=新的端口
+export SERVICE_PORT=新的端口
 }}}
 
  * *传输字符集*
@@ -218,14 +218,13 @@ LAJP中默认的PHP和Java交互字符集是UTF-8，可通过修改启动脚本�
 run-socket.bat
 {{{
 rem 字符集设置  GBK | UTF-8
-
-rem set CHARSET=UTF-8
+set CHARSET=字符集
 }}}
 
 run-socket.sh或run-msgq.sh
 {{{
 # 字符集设置  GBK|UTF-8
-# export CHARSET=UTF-8
+export CHARSET=字符集
 }}}
 
 === 配置示例 ===
@@ -265,7 +264,7 @@ export DBCP_logAbandoned=true
 
 
 # java服务中需要的jar文件或classpath路径，如业务程序、第三方jar文件(如log4j等)
-export other_classpath=lib/commons-beanutils-1.8.2.jar:lib/commons-logging-1.1.1.jar:lib/log4j-1.2.8.jar:lib/commons-dbcp-1.2.2.jar:lib/commons-collections-3.2.1.jar:lib/commons-pool-1.5.4.jar:lib/mysql-connector-java-5.1.7-bin.jar:lib/lajp_10.04.jar:bin/
+export classpath=lib/commons-beanutils-1.8.2.jar:lib/commons-logging-1.1.1.jar:lib/log4j-1.2.8.jar:lib/commons-dbcp-1.2.2.jar:lib/commons-collections-3.2.1.jar:lib/commons-pool-1.5.4.jar:lib/mysql-connector-java-5.1.7-bin.jar:lib/lajp_10.04.jar:bin/
 
 # 自动启动类和方法，LAJP服务启动时会自动加载并执行
 export AUTORUN_CLASS=cn.programmerdigest.Init
@@ -275,10 +274,10 @@ export AUTORUN_METHOD=init
 # export CHARSET=GBK
 
 # LAJP服务启动指令(前台)
-java -classpath .:$other_classpath lajp.PhpJava
+java -classpath .:$classpath lajp.PhpJava
 
 # LAJP服务启动指令(后台)
-# nohup java -classpath lajp_9.10.jar:$other_classpath lajp.PhpJava &
+# nohup java -classpath .:$classpath lajp.PhpJava &
 }}}
 
 Java自动启动方法cn.programmerdigest.Init类中的init方法:
@@ -291,6 +290,7 @@ Java自动启动方法cn.programmerdigest.Init类中的init方法:
 
 		try
 		{
+			//从环境变量中获取DBCP配置信息
 			Properties p = new Properties();
 			p.setProperty("driverClassName", "com.mysql.jdbc.Driver");
 			p.setProperty("url", System.getenv("DBCP_url"));
