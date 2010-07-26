@@ -879,6 +879,6 @@ class aaa_bbb_ccc_MyBean
  * php(string) | Java(java.lang.String)
  * php4对象 | Java(JavaBean)
  * array | java.util.Map或java.util.List
-以上6中数据类型，也就是LAJP所能支持的可以传输的数据类型。
+以上6种数据，也就是LAJP所能支持的可以传输的所有数据类型。
 
 ----
