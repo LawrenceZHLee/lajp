@@ -65,7 +65,7 @@ LAJP有两个核心能力：
 
 === Windows下的LAJP安装配置 ===
 
-请阅读 [http://code.google.com/p/lajp/wiki/Win_Install 图解LAJP在Windows系统上的安装配置 ]
+请阅读 [http://code.google.com/p/lajp/wiki/Win_Install 《图解LAJP在Windows系统上的安装配置》 ]
 
 === Unix/Linux下的LAJP安装配置 ===
  
@@ -159,7 +159,7 @@ php语言规范定义了8中数据类型：boolean、int、float、string、arra
 || 对象 ||object|| _JavaBean_ ||  ||
 || 空 ||NULL||null||  ||
 
-详细的数据转换规则请查阅 [http://code.google.com/p/lajp/wiki/Example 数据转换示例 ]
+详细的数据转换规则请查阅 [http://code.google.com/p/lajp/wiki/Example 《数据转换示例》 ]
 
 
 
