@@ -568,6 +568,8 @@ ret--->NULL<---
 
 == Example 4 集合 ==
 
+----
+
 Java:
 {{{
 package aaa.bbb.ccc;
@@ -736,6 +738,8 @@ ret--->a:3:{s:3:"aaa";i:10;s:3:"ccc";i:30;s:3:"bbb";i:20;}<---
 ----
 
 == Example 5 对象 ==
+
+----
 
 Java:
 {{{
