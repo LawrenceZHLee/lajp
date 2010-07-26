@@ -317,3 +317,8 @@ Java自动启动方法cn.programmerdigest.Init类中的init方法:
 		}
 	}
 }}}
+
+
+== 五、其他的文档 ==
+
+LAJP的blog http://programmerdigest.cn/category/lajp
