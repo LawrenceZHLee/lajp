@@ -1,5 +1,5 @@
-#labels 数据转换示例
-= Example 数据转换示例 =
+#labels LAJP数据转换示例
+= LAJP数据转换示例 =
 
 == 文章简介 ==
 
