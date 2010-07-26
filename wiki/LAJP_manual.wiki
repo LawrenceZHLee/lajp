@@ -159,7 +159,7 @@ php语言规范定义了8中数据类型：boolean、int、float、string、arra
 || 对象 ||object|| _JavaBean_ ||  ||
 || 空 ||NULL||null||  ||
 
-详细的数据转换规则请查阅 [http://code.google.com/p/lajp/wiki/Example 《数据转换示例》 ]
+详细的数据转换规则请查阅 [http://code.google.com/p/lajp/wiki/Example 《LAJP数据转换示例》 ]
 
 
 
