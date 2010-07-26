@@ -29,7 +29,7 @@ LAJP有两个核心能力：
  * *消息队列* 以System V的消息队列作为PHP和Java间的通信媒介，优点是理论速度快，占用资源较小；缺点是只能使用在支持System V的系统中，可运用于大多数的Unix/Linux/BSD系统，但不能用于windows。
  * *socket* 以TCP/IP作为PHP和Java间的通信媒介，优点是基本无系统限制；缺点是理论速度慢，占用资源较大。
 
-== LAJP运行环境要求 ==
+== 一、LAJP运行环境要求 ==
 
 "消息队列模式"和"socket模式"对运行环境的要求是不同的，下面分别加以阐述：
 
@@ -61,7 +61,7 @@ LAJP有两个核心能力：
 
 * 在开发过程中可以同时使用这两种模式，比如一般开发者使用Windows环境，而程序部署在Linux系统中，LAJP在模式的配置上和编码无关。 *
 
-== LAJP安装与运行 ==
+== 二、LAJP安装与运行 ==
 
 === Windows下的LAJP安装配置 ===
 
@@ -138,7 +138,7 @@ gcc lajp_MsgQ.c --share -I. -I/usr/lib/jvm/java-6-sun/include -I/usr/lib/jvm/jav
 
 
 
-== LAJP使用注意事项 ==
+== 三、LAJP使用注意事项 ==
 
  * *Java* Java方法如果要做为LAJP的服务方法，必须声明为 *public static final*
 
@@ -163,7 +163,7 @@ php语言规范定义了8中数据类型：boolean、int、float、string、arra
 
 
 
-== LAJP基本配置 ==
+== 四、LAJP基本配置 ==
 
 LAJP只是单纯的PHP和Java传输的中间机制，像Web系统中常见的数据库连接池、JNDI、缓存等需要开发者自己管理。
 
